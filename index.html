@@ -62,8 +62,8 @@
       background: #0c0c14;
     }
     .chat-header {
-      background: #0e0c1a;
-      border-bottom: 1px solid #1a1628;
+      background: #12101e;
+      border-bottom: none;
       padding: 12px 16px;
       display: flex;
       align-items: center;
@@ -78,8 +78,9 @@
     .header-sag { display: flex; align-items: center; gap: 8px; }
     .chat-isim-chip { background: #12101e; border-radius: 20px; padding: 4px 11px; font-size: 12px; color: #4a3a6a; border: 1px solid #1e1a32; }
     .cik-btn { background: transparent; border: 1.5px solid #1e1a32; color: #3d2d5a; font-size: 13px; padding: 6px 12px; border-radius: 10px; cursor: pointer; font-family: inherit; }
-    .meta-bar { padding: 7px 16px; display: flex; align-items: center; gap: 8px; background: #0c0c14; border-bottom: 1px solid #1a1628; flex-shrink: 0; position: sticky; top: 0; z-index: 9; }
-    .online-pill { display: inline-flex; align-items: center; gap: 5px; background: #0a1a12; border: 1px solid #0f2e1c; border-radius: 20px; padding: 4px 11px; cursor: pointer; font-size: 12px; color: #34d399; font-weight: 500; }
+    .meta-bar { padding: 7px 16px; display: flex; align-items: center; gap: 6px; background: #12101e; border-bottom: 1px solid #1a1628; flex-shrink: 0; position: sticky; top: 0; z-index: 9; }
+    .meta-divider { width: 1px; height: 18px; background: #1e1a32; flex-shrink: 0; }
+    .online-pill { display: inline-flex; align-items: center; gap: 5px; background: transparent; border: none; border-radius: 0; padding: 4px 8px; cursor: pointer; font-size: 12px; color: #34d399; font-weight: 500; }
     .online-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 6px #34d399; flex-shrink: 0; }
     .bildirim-pill { display: inline-flex; align-items: center; gap: 5px; background: #0c0c14; border: 1px solid #1a1628; border-radius: 20px; padding: 4px 11px; cursor: pointer; font-size: 12px; color: #3d2d5a; }
     .bildirim-pill.aktif { color: #34d399; border-color: #0f2e1c; background: #0a1a12; }
@@ -278,8 +279,13 @@
     .new-room-btn { animation: slideUp 0.4s cubic-bezier(0.2,0.8,0.4,1); }
     .overlay { animation: fadeIn 0.35s ease; }
 
+    /* ===== KATEGORİ ===== */
+    .kat-btn { background: #0c0c14; border: 1.5px solid #1e1a32; border-radius: 20px; padding: 5px 12px; font-size: 12px; color: #4a3a6a; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .kat-btn.secili { background: #1e1a32; border-color: #6d28d9; color: #a78bfa; }
+    .kat-etiket { font-size: 11px; background: #1a1228; border: 1px solid #2a1e42; border-radius: 10px; padding: 2px 8px; color: #7c3aed; }
+
     /* ===== TALEP ===== */
-    .talep-btn { background: transparent; border: 1.5px solid #1e1a32; border-radius: 20px; padding: 4px 11px; font-size: 12px; color: #3d2d5a; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .talep-btn { background: transparent; border: none; padding: 4px 8px; font-size: 12px; color: #3d2d5a; cursor: pointer; font-family: inherit; transition: all 0.2s; }
     .talep-btn:hover { border-color: #6d28d9; color: #a78bfa; }
     .talep-bildirim { background: rgba(124,58,237,0.1); border: 1px solid #3b1f6e; border-radius: 12px; padding: 8px 12px; font-size: 12px; color: #a78bfa; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; animation: msgGel 0.35s cubic-bezier(0.2,0.8,0.4,1); }
     .talep-onay { padding: 3px 10px; border-radius: 8px; border: none; background: #1e3a1e; color: #34d399; font-size: 11px; cursor: pointer; font-family: inherit; }
@@ -300,7 +306,7 @@
     .poll-bitti { font-size: 11px; color: #f87171; margin-top: 4px; }
 
     /* ===== ODA KONUSU ===== */
-    .konu-bar { padding: 5px 16px; background: #0a0814; border-bottom: 1px solid #150f28; font-size: 12px; color: #4a3a6a; flex-shrink: 0; display: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .konu-bar { padding: 5px 16px; background: #12101e; border-bottom: none; font-size: 12px; color: #4a3a6a; flex-shrink: 0; display: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .konu-bar span { color: #7c3aed; }
 
     /* ===== KİCK POPUP ===== */
@@ -438,6 +444,20 @@
       <button class="btn" onclick="kayitOl()">Kayıt Ol</button>
       <div class="err" id="kayitErr"></div>
     </div>
+    <!-- OTP Doğrulama -->
+    <div id="otpForm" style="display:none">
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:32px">📬</div>
+        <div style="font-size:14px;color:#e8e0f0;font-weight:600;margin-top:6px">E-postanı doğrula</div>
+        <div style="font-size:12px;color:#4a3a6a;margin-top:4px" id="otpEmailGoster"></div>
+      </div>
+      <span class="label" style="margin-top:0">6 haneli kod</span>
+      <input id="otpKod" type="number" placeholder="000000" maxlength="6" style="font-size:22px;text-align:center;letter-spacing:8px;font-weight:700" />
+      <button class="btn" onclick="otpDogrula()">Doğrula ✅</button>
+      <div style="text-align:center;margin-top:8px"><span onclick="otpTekrarGonder()" style="font-size:12px;color:#4a3a6a;cursor:pointer;text-decoration:underline">Kodu tekrar gönder</span></div>
+      <div class="err" id="otpErr"></div>
+    </div>
+
     <!-- Şifremi Unuttum -->
     <div id="sifreUnuttumForm" style="display:none">
       <div style="font-size:13px;color:#a78bfa;margin-bottom:12px">E-postanı gir, sıfırlama linki gönderelim</div>
@@ -557,6 +577,14 @@
       <span class="label">Oda adı</span><input id="yeniAd" type="text" placeholder="Oda adı" />
       <span class="label">Giriş şifresi (opsiyonel)</span><input id="yeniSifre" type="password" placeholder="Şifresiz bırakabilirsin" />
       <span class="label">Yönetici anahtarı</span><input id="yeniYKey" type="password" placeholder="Gizli anahtar belirle" />
+      <span class="label">Oda kategorisi</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px" id="kategoriSecim">
+        <button type="button" class="kat-btn" onclick="katSec(this,'sohbet')">💬 Sohbet</button>
+        <button type="button" class="kat-btn" onclick="katSec(this,'tartisma')">🔥 Tartışma</button>
+        <button type="button" class="kat-btn" onclick="katSec(this,'fikir')">💡 Fikir Üretme</button>
+        <button type="button" class="kat-btn" onclick="katSec(this,'etkilesim')">⚡ Etkileşim</button>
+      </div>
+      <input type="hidden" id="seciliKategori" value="" />
       <span class="label">Oda açıklaması (maks 30 karakter)</span><input id="yeniKonu" type="text" placeholder="Kısa açıklama..." maxlength="30" />
       <span class="label">Maks kişi (varsayılan: 50)</span><input id="yeniMax" type="number" placeholder="Boş bırakırsan 50 olur" min="2" max="500" />
       <span class="label">Takma ismin</span><input id="yeniIsim" type="text" placeholder="Takma ismin" />
@@ -614,11 +642,14 @@
     <div class="online-pill" onclick="popupAc()">
       <span class="online-dot"></span><span id="onlineSayi">0</span>
     </div>
+    <div class="meta-divider"></div>
     <div class="bildirim-pill" id="bildirimBadge" onclick="bildirimToggle()">
       🔔 <span id="bildirimYazi">Bildirim</span>
     </div>
+    <div class="meta-divider"></div>
     <div class="durum-dot" id="durumDot"></div>
     <button id="talepBtn" class="talep-btn" onclick="talepGonder()" style="display:none">📋 Talep</button>
+    <button id="duyuruGonderBtn" class="talep-btn" onclick="herkeseDuyuru()" style="display:none">📢</button>
     <button class="yonetici-toggle" onclick="panelToggle()" style="margin-left:auto">⚙️</button>
   </div>
   <div class="duyuru-bar" id="duyuruBar">📢 Duyuru modu — sadece yönetici yazabilir</div>
@@ -697,7 +728,7 @@
   </div>
 </div>
 
-<div class="ver">v5.5</div>
+<div class="ver">v6.0</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ALT NAV -->
@@ -828,19 +859,23 @@ function odalariGoster(odalar){
   odalar.forEach(o=>{
     const div=document.createElement("div");div.className="oda-item";
     const et=[];
+    if(o.kategori){
+      const katIkon={sohbet:"💬",tartisma:"🔥",fikir:"💡",etkilesim:"⚡"};
+      et.push(`<span class="kat-etiket">${katIkon[o.kategori]||""} ${o.kategori}</span>`);
+    }
     const kilitEtiket = o.password
       ? `<span class="etiket" style="color:#f87171;border-color:#3a1010;background:#1a0505">🔒 Şifreli</span>`
       : `<span class="etiket" style="color:#34d399;border-color:#0f2e1c;background:#0a1a12">🔓 Açık</span>`;
     if(o.max_users)et.push(`👥 ${o.max_users}`);
     if(o.duyuru_modu)et.push("📢");
     const konuHtml = (o.konu && o.konu.trim())
-      ? `<div style="background:#0c0c14;border:1px solid #2a1e42;border-radius:10px;padding:6px 12px;font-size:12px;color:#c0a0f0;min-width:90px;max-width:140px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0">${safe(o.konu)}</div>`
-      : `<div style="width:0"></div>`;
+      ? `<div style="font-size:11px;color:#6d4aa0;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%">📝 ${safe(o.konu)}</div>`
+      : "";
     div.innerHTML=`<div style="flex:1;min-width:0;overflow:hidden">`
       +`<div class="oda-adi">${safe(o.name)}</div>`
-      +`<div class="oda-etiketler">${kilitEtiket}${et.map(e=>`<span class="etiket">${e}</span>`).join("")}</div>`
-      +`</div>`
       +konuHtml
+      +`<div class="oda-etiketler">${kilitEtiket}${et.join("")}</div>`
+      +`</div>`
       +`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a1e42" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0;margin-left:6px"><polyline points="9 18 15 12 9 6"/></svg>`;
     div.onclick=()=>odayaTikla(o);liste.appendChild(div);
   });
@@ -933,6 +968,14 @@ async function sohbeteGir(){
   alintiTemizle();bildirimDurumYukle();duyuruGuncelle();konuGoster();talepBtnGuncelle();
   el("durumDot").className="durum-dot";
   await presenceGir();
+  // Oda sahibiyse otomatik admin yap
+  if(aktifHesap && aktifOda.user_id === aktifHesap.id){
+    yoneticiMi=true;
+    el("yoneticiPanel").style.display="none";
+    el("yGiris").style.display="none";
+    el("yOnaylandi").style.display="block";
+    duyuruGuncelle(); talepBtnGuncelle();
+  }
   await mesajlariYukle();
   await onlineGuncelle();
   // Realtime: yeni mesaj gelince anında güncelle
@@ -1194,7 +1237,8 @@ async function odaOlustur(){
     if(count>=3){hata("yeniErr","En fazla 3 oda açabilirsin! 🚫");return;}
   }
   const konu=el("yeniKonu").value.trim().substring(0,30);
-  const{data,error}=await sb.from("rooms").insert([{name:ad,password:sifre||null,owner_key:yKey,max_users:maxU?parseInt(maxU):50,duyuru_modu:false,konu:konu||null,user_id:aktifHesap?aktifHesap.id:null}]).select().single();
+  const kategori=el("seciliKategori").value||null;
+  const{data,error}=await sb.from("rooms").insert([{name:ad,password:sifre||null,owner_key:yKey,max_users:maxU?parseInt(maxU):50,duyuru_modu:false,konu:konu||null,user_id:aktifHesap?aktifHesap.id:null,kategori}]).select().single();
   if(error){hata("yeniErr","Hata: "+error.message);return;}
   aktifOda=data;aktifIsim=isim;
   yeniOdaGizle();gizle("anaSayfa");
@@ -1228,6 +1272,12 @@ document.addEventListener("keydown",e=>{
 });
 
 // ===== TALEP SİSTEMİ =====
+async function herkeseDuyuru(){
+  const mesaj = prompt("Duyurunuzu yazın:");
+  if(!mesaj||!mesaj.trim()) return;
+  await sb.from("messages").insert([{room:aktifOda.id, name:"📢 Duyuru", message:aktifIsim+": "+mesaj.trim()}]);
+}
+
 async function talepGonder(){
   const msg = prompt("Admin'e ne talep etmek istiyorsun?");
   if(!msg||!msg.trim()) return;
@@ -1292,10 +1342,11 @@ async function talepCevapla(talepId, talepMetin, tip){
 // ===== ODA KONUSU =====
 async function konuGuncelle(){
   const k = el("konuInput").value.trim().substring(0,30);
-  await sb.from("rooms").update({konu: k||null}).eq("id", aktifOda.id);
+  const {error} = await sb.from("rooms").update({konu: k||null}).eq("id", aktifOda.id);
+  if(error){ alert("Hata: "+error.message); return; }
   aktifOda.konu = k||null;
   konuGoster();
-  alert(k ? "Konu güncellendi!" : "Konu kaldırıldı!");
+  alert(k ? "Konu güncellendi! ✅" : "Konu kaldırıldı!");
 }
 function konuGoster(){
   if(aktifOda.konu){ el("konuBar").style.display="block"; el("konuMetin").textContent=aktifOda.konu; }
@@ -1506,6 +1557,7 @@ function authTab(t){
   el("girisForm").style.display="none";
   el("kayitForm").style.display="none";
   el("sifreUnuttumForm").style.display="none";
+  el("otpForm").style.display="none";
   el("girisTab").classList.remove("aktif");
   el("kayitTab").classList.remove("aktif");
   if(t==="giris"){
@@ -1514,6 +1566,9 @@ function authTab(t){
   } else if(t==="kayit"){
     el("kayitForm").style.display="";
     el("kayitTab").classList.add("aktif");
+  } else if(t==="otp"){
+    el("otpForm").style.display="";
+    el("otpEmailGoster").textContent=bekleyenEmail;
   } else {
     el("sifreUnuttumForm").style.display="";
   }
@@ -1528,7 +1583,14 @@ async function girisYap(){
   const {data:user} = await sb.from("users").select("email,id,username,created_at").eq("username",ad).single();
   if(!user){ el("girisErr").textContent="Kullanıcı bulunamadı!"; return; }
   const {data:authData, error:authError} = await sb.auth.signInWithPassword({email:user.email, password:sifre});
-  if(authError){ el("girisErr").textContent="Şifre hatalı!"; return; }
+  if(authError){
+    if(authError.message.includes("Email not confirmed")){
+      el("girisErr").textContent="❌ E-postanı doğrulamamışsın! Gelen kutunu kontrol et.";
+    } else {
+      el("girisErr").textContent="Şifre hatalı!";
+    }
+    return;
+  }
   aktifHesap = {id:user.id, username:user.username, email:user.email, created_at:user.created_at};
   localStorage.setItem("mukoChatHesap", JSON.stringify(aktifHesap));
   authGuncelle(); authKapat();
@@ -1559,10 +1621,10 @@ async function kayitOl(){
   // users tablosuna kaydet
   const {data,error} = await sb.from("users").insert([{id:authData.user.id, username:ad, email, password:s1}]).select().single();
   if(error||!data){ el("kayitErr").textContent="Kayıt hatası: "+(error?.message||""); return; }
-  aktifHesap = {id:data.id, username:data.username, email:data.email, created_at:data.created_at};
-  localStorage.setItem("mukoChatHesap", JSON.stringify(aktifHesap));
-  authGuncelle(); authKapat();
-  alert("Hoş geldin, "+ad+"! ✅");
+  // OTP formuna geç
+  bekleyenEmail = email;
+  bekleyenKayit = {id:authData.user.id, username:ad, email, created_at:data.created_at};
+  authTab("otp");
 }
 
 async function hesapCikis(){
@@ -1573,6 +1635,12 @@ async function hesapCikis(){
   authGuncelle();
 }
 
+function katSec(btn, kat){
+  document.querySelectorAll(".kat-btn").forEach(b=>b.classList.remove("secili"));
+  btn.classList.add("secili");
+  el("seciliKategori").value = kat;
+}
+
 function yeniOdaKontrol(){
   if(!aktifHesap){ 
     alert("Oda oluşturmak için giriş yapman gerekiyor! 👤");
@@ -1580,6 +1648,31 @@ function yeniOdaKontrol(){
     return;
   }
   yeniOdaGoster();
+}
+
+let bekleyenEmail = null;
+let bekleyenKayit = null;
+
+async function otpDogrula(){
+  const kod = el("otpKod").value.trim();
+  if(kod.length !== 6){ el("otpErr").textContent="6 haneli kodu gir!"; return; }
+  el("otpErr").textContent="Doğrulanıyor...";
+  const {error} = await sb.auth.verifyOtp({email: bekleyenEmail, token: kod, type: "signup"});
+  if(error){ el("otpErr").textContent="❌ Hatalı veya süresi dolmuş kod!"; return; }
+  // Doğrulama başarılı
+  aktifHesap = bekleyenKayit;
+  localStorage.setItem("mukoChatHesap", JSON.stringify(aktifHesap));
+  bekleyenEmail=null; bekleyenKayit=null;
+  authGuncelle(); authKapat();
+  alert("Hoş geldin, "+aktifHesap.username+"! ✅");
+}
+
+async function otpTekrarGonder(){
+  if(!bekleyenEmail) return;
+  const {error} = await sb.auth.resend({email: bekleyenEmail, type: "signup"});
+  if(error){ el("otpErr").textContent="Hata: "+error.message; return; }
+  el("otpErr").style.color="#34d399";
+  el("otpErr").textContent="✅ Kod tekrar gönderildi!";
 }
 
 async function sifreUnuttum(){
@@ -1605,7 +1698,7 @@ async function profilAc(){
   // Bu kullanıcının kurduğu odalar - owner_key localStorage'da yok
   // owner_key varsa rooms'dan çekelim
   const odaDiv = el("profilOdalar");
-  const {data:odalar} = await sb.from("rooms").select("id,name,created_at").eq("user_id",aktifHesap.id).order("created_at",{ascending:false});
+  const {data:odalar} = await sb.from("rooms").select("id,name,created_at,owner_key").eq("user_id",aktifHesap.id).order("created_at",{ascending:false});
   if(!odalar||odalar.length===0){ odaDiv.innerHTML='<div style="color:#2a1e42;font-size:13px">Henüz oda yok</div>'; }
   else {
     odaDiv.innerHTML = odalar.map(o=>`
@@ -1619,6 +1712,19 @@ async function profilAc(){
     odaDiv.querySelectorAll(".profil-sil-btn").forEach(btn=>{
       btn.addEventListener("click", ()=>profilOdaSil(btn.dataset.id, btn.dataset.ad));
     });
+  }
+  // Yönetici anahtarları
+  if(odalar && odalar.length>0){
+    el("profilOwnerKey").style.display="";
+    el("profilKeyListe").innerHTML = odalar.map(o=>`
+      <div style="background:#0c0c14;border:1px solid #1a1628;border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:12px">
+        <div style="color:#e8e0f0;font-weight:600">#${safe(o.name)}</div>
+        <div style="color:#4a3a6a;margin-top:4px;display:flex;align-items:center;gap:6px">
+          <span>🔑 Anahtar: </span>
+          <span id="key_${o.id}" style="color:#a78bfa;font-family:monospace;filter:blur(4px);cursor:pointer" onclick="this.style.filter='none'">${safe(o.owner_key||"—")}</span>
+          <span style="font-size:10px;color:#2a1e42">(görmek için tıkla)</span>
+        </div>
+      </div>`).join("");
   }
   el("profilOverlay").style.display="flex";
 }
