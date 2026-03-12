@@ -17,10 +17,12 @@
     button:hover { opacity: 0.9; }
     .btn-gray { background: #3d1a7a; }
     .btn-red { background: #7a1010; }
-    .hidden { display: none; }
-    .error { color: #ff6b6b; font-size: 13px; background: rgba(255,0,0,0.1); padding: 8px; border-radius: 8px; margin-top: 8px; }
+    .error { color: #ff6b6b; font-size: 13px; background: rgba(255,0,0,0.1); padding: 8px; border-radius: 8px; margin-top: 8px; display: none; }
     .status { color: #7dffbc; font-size: 13px; text-align: center; margin: 5px 0; }
     .section-title { color: #ffd54a; font-size: 15px; font-weight: bold; margin-bottom: 12px; }
+    .label { font-size: 12px; color: #aa98d9; margin-top: 12px; margin-bottom: -6px; display: block; }
+
+    /* ODA LİSTESİ */
     .oda-item { background: #120824; border: 1px solid #3d216d; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.2s; }
     .oda-item:hover { border-color: #8c52ff; }
     .oda-adi { font-size: 16px; font-weight: bold; color: #fff; }
@@ -28,6 +30,8 @@
     .oda-bos { color: #aa98d9; font-size: 14px; text-align: center; padding: 20px; }
     .yeni-btn { background: #1f0d3d; border: 1px dashed #53308b; border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; color: #aa98d9; font-size: 14px; margin-bottom: 16px; }
     .yeni-btn:hover { border-color: #8c52ff; color: #fff; }
+
+    /* SOHBET */
     .chat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .chat-header h2 { color: #ffd54a; font-size: 18px; }
     .chat-box { height: 320px; overflow-y: auto; background: #120824; border: 1px solid #53308b; border-radius: 10px; padding: 10px; margin: 8px 0; }
@@ -41,35 +45,20 @@
     .row input { flex: 1; margin-top: 0; }
     .row button { width: auto; padding: 12px 18px; margin-top: 0; flex-shrink: 0; }
     .yonetici-kutu { background: rgba(255,200,0,0.07); border: 1px solid #7a5c00; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #ffd54a; }
-    .label { font-size: 12px; color: #aa98d9; margin-top: 12px; margin-bottom: -6px; display: block; }
 
-    /* ÇEVRİMİÇİ ÖZET */
-    .online-ozet {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #0d0820; border: 1px solid #2a1f4a;
-      border-radius: 20px; padding: 5px 12px;
-      cursor: pointer; font-size: 13px; color: #7dffbc;
-      margin: 6px 0; transition: border-color 0.2s;
-    }
+    /* ÇEVRİMİÇİ */
+    .online-ozet { display: inline-flex; align-items: center; gap: 6px; background: #0d0820; border: 1px solid #2a1f4a; border-radius: 20px; padding: 5px 12px; cursor: pointer; font-size: 13px; color: #7dffbc; margin: 6px 0; }
     .online-ozet:hover { border-color: #7dffbc; }
-    .online-nokta { width: 8px; height: 8px; border-radius: 50%; background: #7dffbc; box-shadow: 0 0 5px #7dffbc; }
+    .online-nokta { width: 8px; height: 8px; border-radius: 50%; background: #7dffbc; box-shadow: 0 0 5px #7dffbc; flex-shrink: 0; }
 
     /* POPUP */
-    .popup-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6); z-index: 100;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .popup-kutu {
-      background: #1a0b33; border: 1px solid #3d216d;
-      border-radius: 16px; padding: 20px; width: 280px;
-      max-height: 400px; overflow-y: auto;
-    }
+    .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; }
+    .popup-kutu { background: #1a0b33; border: 1px solid #3d216d; border-radius: 16px; padding: 20px; width: 280px; max-height: 400px; overflow-y: auto; }
     .popup-baslik { color: #ffd54a; font-weight: bold; font-size: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .popup-kapat { cursor: pointer; color: #aa98d9; font-size: 18px; }
+    .popup-kapat { cursor: pointer; color: #aa98d9; font-size: 20px; line-height: 1; padding: 0 4px; }
+    .popup-kapat:hover { color: #fff; }
     .popup-kisi { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #2a1f4a; font-size: 14px; }
     .popup-kisi:last-child { border-bottom: none; }
-    .popup-nokta { width: 8px; height: 8px; border-radius: 50%; background: #7dffbc; box-shadow: 0 0 5px #7dffbc; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -82,19 +71,19 @@
       <div class="subtitle">Bir odaya gir veya yeni oda oluştur</div>
     </div>
     <div class="yeni-btn" onclick="yeniOdaGoster()">+ Yeni Oda Oluştur</div>
-    <div class="card hidden" id="yeniOdaForm">
+    <div class="card" id="yeniOdaForm" style="display:none">
       <div class="section-title">Yeni Oda Oluştur</div>
       <span class="label">Oda adı</span>
       <input id="yeniAd" type="text" placeholder="Oda adı" />
       <span class="label">Giriş şifresi (opsiyonel)</span>
       <input id="yeniSifre" type="password" placeholder="Şifresiz bırakabilirsin" />
-      <span class="label">Yönetici anahtarı (odayı silmek için)</span>
+      <span class="label">Yönetici anahtarı</span>
       <input id="yeniYoneticiKey" type="password" placeholder="Gizli anahtar belirle" />
       <span class="label">Takma ismin</span>
       <input id="yeniIsim" type="text" placeholder="Takma ismin" />
       <button onclick="odaOlustur()">Odayı Oluştur ve Gir</button>
       <button class="btn-gray" onclick="yeniOdaGizle()">İptal</button>
-      <div id="yeniErr" class="error hidden"></div>
+      <div class="error" id="yeniErr"></div>
     </div>
     <div class="card">
       <div class="section-title">Odalar</div>
@@ -102,8 +91,8 @@
     </div>
   </div>
 
-  <!-- ŞİFRE -->
-  <div id="sifreSayfasi" class="hidden">
+  <!-- ŞİFRE EKRANI -->
+  <div id="sifreSayfasi" style="display:none">
     <div class="card" style="margin-top:40px">
       <h1 id="sifreOdaAdi">Oda</h1>
       <div class="subtitle">Bu oda şifreli</div>
@@ -111,23 +100,23 @@
       <input id="sifreIsim" type="text" placeholder="Takma ismin" />
       <button onclick="sifreDogrula()">Gir</button>
       <button class="btn-gray" onclick="anaSayfayaDon()">Geri</button>
-      <div id="sifreErr" class="error hidden"></div>
+      <div class="error" id="sifreErr"></div>
     </div>
   </div>
 
-  <!-- İSİM -->
-  <div id="isimSayfasi" class="hidden">
+  <!-- İSİM EKRANI -->
+  <div id="isimSayfasi" style="display:none">
     <div class="card" style="margin-top:40px">
       <h1 id="isimOdaAdi">Oda</h1>
       <input id="isimGir" type="text" placeholder="Takma ismin" />
       <button onclick="isimleGir()">Odaya Gir</button>
       <button class="btn-gray" onclick="anaSayfayaDon()">Geri</button>
-      <div id="isimErr" class="error hidden"></div>
+      <div class="error" id="isimErr"></div>
     </div>
   </div>
 
-  <!-- SOHBET -->
-  <div id="chatSayfasi" class="hidden">
+  <!-- SOHBET EKRANI -->
+  <div id="chatSayfasi" style="display:none">
     <div class="card" style="padding-bottom:10px">
       <div class="chat-header">
         <h2 id="chatOdaAdi">Oda</h2>
@@ -137,21 +126,17 @@
         </div>
       </div>
       <div class="status" id="durumYazi">Bağlanıyor...</div>
-
-      <!-- ÇEVRİMİÇİ ÖZET -->
       <div class="online-ozet" onclick="popupAc()">
         <span class="online-nokta"></span>
         <span id="onlineOzet">0 çevrimiçi</span>
       </div>
-
       <div class="chat-box" id="mesajlar"></div>
-      <div id="chatErr" class="error hidden"></div>
+      <div class="error" id="chatErr"></div>
       <div class="row">
         <input id="mesajIn" type="text" placeholder="Mesaj yaz..." />
         <button onclick="gonder()" id="gonderBtn" style="width:auto;padding:12px 18px;margin-top:0">Gönder</button>
       </div>
-
-      <div id="yoneticiPanel" class="yonetici-kutu hidden">
+      <div class="yonetici-kutu" id="yoneticiPanel" style="display:none">
         ⭐ Sen bu odanın yöneticisisin
         <button class="btn-red" style="margin-top:8px;font-size:13px;padding:10px" onclick="odaSil()">🗑️ Odayı Sil</button>
       </div>
@@ -160,15 +145,16 @@
           <input id="yoneticiKeyGir" type="password" placeholder="Yönetici anahtarı" style="margin-top:0;font-size:13px" />
           <button onclick="yoneticiDogrula()" style="width:auto;padding:10px 14px;margin-top:0;font-size:13px;background:#3d1a7a">Doğrula</button>
         </div>
-        <div id="yoneticiErr" class="error hidden"></div>
+        <div class="error" id="yoneticiErr"></div>
       </div>
     </div>
   </div>
+
 </div>
 
-<!-- ÇEVRİMİÇİ POPUP -->
-<div class="popup-overlay hidden" id="onlinePopup" onclick="popupKapat(event)">
-  <div class="popup-kutu">
+<!-- POPUP - wrap dışında, sadece flex ile gösterilecek -->
+<div class="popup-overlay" id="onlinePopup">
+  <div class="popup-kutu" onclick="event.stopPropagation()">
     <div class="popup-baslik">
       🟢 Çevrimiçi
       <span class="popup-kapat" onclick="popupKapat()">✕</span>
@@ -187,23 +173,25 @@ let aktifOda = null, aktifIsim = "", timer = null, presenceTimer = null, presenc
 let onlineKisiler = [];
 
 function safe(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-function goster(id) { document.getElementById(id).classList.remove("hidden"); }
-function gizle(id) { document.getElementById(id).classList.add("hidden"); }
-function hata(id, msg) { const e = document.getElementById(id); e.textContent = msg; e.classList.remove("hidden"); }
-function hataGizle(id) { document.getElementById(id).classList.add("hidden"); }
+function goster(id) { document.getElementById(id).style.display = "block"; }
+function gosterflex(id) { document.getElementById(id).style.display = "flex"; }
+function gizle(id) { document.getElementById(id).style.display = "none"; }
+function hata(id, msg) { const e = document.getElementById(id); e.textContent = msg; e.style.display = "block"; }
+function hataGizle(id) { document.getElementById(id).style.display = "none"; }
 function durum(msg) { document.getElementById("durumYazi").textContent = msg; }
 
-// POPUP
 function popupAc() {
   const liste = document.getElementById("popupListe");
   liste.innerHTML = onlineKisiler.length === 0
-    ? '<div style="color:#aa98d9;font-size:14px">Kimse yok</div>'
-    : onlineKisiler.map(n => `<div class="popup-kisi"><span class="popup-nokta"></span>${safe(n)}</div>`).join("");
-  goster("onlinePopup");
+    ? '<div style="color:#aa98d9;font-size:14px;padding:8px 0">Kimse yok</div>'
+    : onlineKisiler.map(n => `<div class="popup-kisi"><span class="online-nokta"></span>${safe(n)}</div>`).join("");
+  gosterflex("onlinePopup");
 }
-function popupKapat(e) {
-  if (!e || e.target === document.getElementById("onlinePopup")) gizle("onlinePopup");
-}
+function popupKapat() { gizle("onlinePopup"); }
+
+document.getElementById("onlinePopup").addEventListener("click", function(e) {
+  if (e.target === this) popupKapat();
+});
 
 async function odalariYukle() {
   const { data } = await sb.from("rooms").select("id,name,password,created_at").order("created_at", {ascending: false});
@@ -223,12 +211,15 @@ function odayaTikla(oda) {
   aktifOda = oda;
   if (oda.password) {
     document.getElementById("sifreOdaAdi").textContent = "# " + oda.name;
-    document.getElementById("sifreGir").value = ""; document.getElementById("sifreIsim").value = "";
-    hataGizle("sifreErr"); gizle("anaSayfa"); goster("sifreSayfasi");
+    document.getElementById("sifreGir").value = "";
+    document.getElementById("sifreIsim").value = "";
+    hataGizle("sifreErr");
+    gizle("anaSayfa"); goster("sifreSayfasi");
   } else {
     document.getElementById("isimOdaAdi").textContent = "# " + oda.name;
     document.getElementById("isimGir").value = "";
-    hataGizle("isimErr"); gizle("anaSayfa"); goster("isimSayfasi");
+    hataGizle("isimErr");
+    gizle("anaSayfa"); goster("isimSayfasi");
   }
 }
 
@@ -248,12 +239,14 @@ function isimleGir() {
 
 async function sohbeteGir() {
   yoneticiMi = false;
-  gizle("sifreSayfasi"); gizle("isimSayfasi"); goster("chatSayfasi");
+  gizle("sifreSayfasi"); gizle("isimSayfasi");
+  goster("chatSayfasi");
   document.getElementById("chatOdaAdi").textContent = "# " + aktifOda.name;
   document.getElementById("chatIsimGoster").textContent = aktifIsim;
   document.getElementById("mesajlar").innerHTML = "";
   gizle("yoneticiPanel"); goster("yoneticiGiris");
-  hataGizle("yoneticiErr"); document.getElementById("yoneticiKeyGir").value = "";
+  hataGizle("yoneticiErr");
+  document.getElementById("yoneticiKeyGir").value = "";
   durum("Yükleniyor...");
   await presenceGir();
   await mesajlariYukle();
@@ -357,8 +350,8 @@ async function cik() {
   await presenceCik();
   aktifOda = null; aktifIsim = ""; yoneticiMi = false;
   document.getElementById("mesajlar").innerHTML = "";
-  gizle("chatSayfasi"); gizle("onlinePopup"); goster("anaSayfa");
-  odalariYukle();
+  gizle("chatSayfasi"); gizle("onlinePopup");
+  goster("anaSayfa"); odalariYukle();
 }
 
 function anaSayfayaDon() { gizle("sifreSayfasi"); gizle("isimSayfasi"); goster("anaSayfa"); }
@@ -368,12 +361,12 @@ window.addEventListener("beforeunload", () => {
 });
 
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape") gizle("onlinePopup");
+  if (e.key === "Escape") popupKapat();
   if (e.key !== "Enter") return;
-  if (!document.getElementById("chatSayfasi").classList.contains("hidden")) gonder();
-  else if (!document.getElementById("sifreSayfasi").classList.contains("hidden")) sifreDogrula();
-  else if (!document.getElementById("isimSayfasi").classList.contains("hidden")) isimleGir();
-  else if (!document.getElementById("yeniOdaForm").classList.contains("hidden")) odaOlustur();
+  if (document.getElementById("chatSayfasi").style.display !== "none") gonder();
+  else if (document.getElementById("sifreSayfasi").style.display !== "none") sifreDogrula();
+  else if (document.getElementById("isimSayfasi").style.display !== "none") isimleGir();
+  else if (document.getElementById("yeniOdaForm").style.display !== "none") odaOlustur();
 });
 
 odalariYukle();
