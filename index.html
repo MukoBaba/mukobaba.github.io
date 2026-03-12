@@ -136,7 +136,8 @@
     .kilitli-bilgi { display: none; text-align: center; color: #2e2548; font-size: 13px; padding: 8px 0; }
     .footer-extra { display: flex; justify-content: center; margin-top: 7px; }
     .yonetici-toggle { background: transparent; border: 1px solid #1a1628; border-radius: 10px; padding: 4px 16px; font-size: 12px; color: #2e2548; cursor: pointer; font-family: inherit; }
-    .yonetici-panel { display: none; background: #0c0c14; border: 1px solid #1a1628; border-radius: 14px; padding: 14px; margin-top: 8px; max-height: 200px; overflow-y: auto; }
+    .yonetici-panel { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 300; align-items: flex-end; justify-content: center; }
+    .yonetici-panel-icerik { background: #12101e; border: 1px solid #1e1a32; border-radius: 20px 20px 0 0; padding: 20px; width: 100%; max-width: 460px; max-height: 80vh; overflow-y: auto; animation: slideUp 0.35s cubic-bezier(0.2,0.8,0.4,1); }
 
     /* ---- POPUPLAR ---- */
     .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: none; align-items: flex-end; justify-content: center; padding: 16px; }
@@ -421,18 +422,29 @@
       <span class="label">Şifre</span>
       <input id="girisSifre" type="password" placeholder="Şifren" />
       <button class="btn" onclick="girisYap()">Giriş Yap</button>
+      <div style="text-align:center;margin-top:8px"><span onclick="authTab('unuttum')" style="font-size:12px;color:#4a3a6a;cursor:pointer;text-decoration:underline">Şifremi unuttum</span></div>
       <div class="err" id="girisErr"></div>
     </div>
     <!-- Kayıt -->
     <div id="kayitForm" style="display:none">
       <span class="label" style="margin-top:0">Kullanıcı adı</span>
       <input id="kayitAd" type="text" placeholder="Kullanıcı adın" maxlength="20" />
+      <span class="label">E-posta</span>
+      <input id="kayitEmail" type="email" placeholder="ornek@gmail.com" />
       <span class="label">Şifre</span>
       <input id="kayitSifre" type="password" placeholder="Şifren" />
       <span class="label">Şifreyi tekrarla</span>
       <input id="kayitSifre2" type="password" placeholder="Şifreni tekrar yaz" />
       <button class="btn" onclick="kayitOl()">Kayıt Ol</button>
       <div class="err" id="kayitErr"></div>
+    </div>
+    <!-- Şifremi Unuttum -->
+    <div id="sifreUnuttumForm" style="display:none">
+      <div style="font-size:13px;color:#a78bfa;margin-bottom:12px">E-postanı gir, sıfırlama linki gönderelim</div>
+      <span class="label" style="margin-top:0">E-posta</span>
+      <input id="sifreUnuttumEmail" type="email" placeholder="ornek@gmail.com" />
+      <button class="btn" onclick="sifreUnuttum()">Sıfırlama Linki Gönder</button>
+      <div class="err" id="sifreUnuttumErr"></div>
     </div>
     <button class="btn btn-gray" onclick="authKapat()" style="margin-top:8px">İptal</button>
   </div>
@@ -625,7 +637,9 @@
     </div>
     <div class="kilitli-bilgi" id="kilitliBilgi">🔇 Sadece yönetici yazabilir</div>
 
-    <div class="yonetici-panel" id="yoneticiPanel">
+    <div class="yonetici-panel" id="yoneticiPanel" onclick="panelDışıKapat(event)">
+    <div class="yonetici-panel-icerik">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:14px;font-weight:700;color:#e8e0f0">⚙️ Yönetici Paneli</div><span onclick="panelKapat()" style="cursor:pointer;color:#3d2d5a;font-size:20px">✕</span></div>
       <div id="yGiris">
         <span class="label" style="margin-top:0">Yönetici anahtarı</span>
         <div style="display:flex;gap:8px;margin-top:6px">
@@ -679,10 +693,11 @@
         <button class="btn btn-red" onclick="odaSil()" style="font-size:13px;padding:10px;margin-top:10px">🗑️ Odayı Sil</button>
       </div>
     </div>
+    </div>
   </div>
 </div>
 
-<div class="ver">v4.7</div>
+<div class="ver">v5.5</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ALT NAV -->
@@ -704,7 +719,7 @@ const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
 let aktifOda=null, aktifIsim="", yoneticiMi=false;
-let timer=null, presTimer=null, presenceId=null;
+let timer=null, presTimer=null, presenceId=null, realtimeChannel=null;
 let onlineKisiler=[], tumOdalar=[], alintiMsg=null;
 let bildirimAcik=false, sonMesajId=null;
 
@@ -920,7 +935,14 @@ async function sohbeteGir(){
   await presenceGir();
   await mesajlariYukle();
   await onlineGuncelle();
-  timer=setInterval(async()=>{await mesajlariYukle();await onlineGuncelle();await odaDurumGuncelle();await kickKontrolEt();},3000);
+  // Realtime: yeni mesaj gelince anında güncelle
+  if(realtimeChannel){ sb.removeChannel(realtimeChannel); }
+  realtimeChannel = sb.channel("messages:"+aktifOda.id)
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"room=eq."+aktifOda.id},
+      (payload)=>{ mesajEkle(payload.new); }
+    ).subscribe();
+  // Polling sadece online/kick/durum için (daha seyrek)
+  timer=setInterval(async()=>{await onlineGuncelle();await odaDurumGuncelle();await kickKontrolEt();},5000);
   presTimer=setInterval(presenceYenile,10000);
   el("mesajIn").focus();
 }
@@ -944,6 +966,51 @@ async function onlineGuncelle(){
   onlineKisiler=(data||[]).map(p=>p.name);
   const max=aktifOda.max_users?`/${aktifOda.max_users}`:"";
   el("onlineSayi").textContent=onlineKisiler.length+max;
+}
+
+// TEK MESAJ EKLE (Realtime için)
+function mesajEkle(m){
+  const box = el("mesajlar");
+  if(!box) return;
+  if(box.querySelector(`.msg[data-id="${m.id}"]`)) return; // zaten var
+  const benimMi = m.name===aktifIsim;
+  const scrollBottom = box.scrollHeight-box.scrollTop-box.clientHeight<80;
+  const gruplar = box.querySelectorAll(".msg-grup");
+  const sonGrup = gruplar[gruplar.length-1];
+  const oncekiIsim = sonGrup ? sonGrup.querySelector(".msg-grup-isim")?.textContent : null;
+  let grup;
+  if(!sonGrup || oncekiIsim !== m.name){
+    grup = document.createElement("div");
+    grup.className = "msg-grup "+(benimMi?"benim":"diger");
+    const isimDiv = document.createElement("div");
+    isimDiv.className = "msg-grup-isim";
+    isimDiv.textContent = m.name;
+    grup.appendChild(isimDiv);
+    box.appendChild(grup);
+  } else {
+    grup = sonGrup;
+  }
+  const div = document.createElement("div");
+  div.className = "msg "+(benimMi?"benim":"diger");
+  div.dataset.id = m.id; div.dataset.isim = m.name; div.dataset.mesaj = m.message;
+  const saat = new Date(m.created_at).toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit"});
+  const alintiBlok = m.reply_to?`<div class="alinti-blok">↩ ${safe(m.reply_to)}</div>`:"";
+  div.innerHTML=`${alintiBlok}<div class="msg-icerik">${safe(m.message)}</div><div class="msg-alt"><span class="msg-saat">${saat}</span><span class="alinti-btn" onclick="alintiYap(this)">↩</span><span class="ilet-btn" onclick="iletAc(this)">↗</span></div>`;
+  let tapTimer=null;
+  div.addEventListener("click",()=>{
+    if(tapTimer){clearTimeout(tapTimer);tapTimer=null;alintiYapDiv(div);}
+    else{tapTimer=setTimeout(()=>{tapTimer=null;},300);}
+  });
+  grup.appendChild(div);
+  if(scrollBottom) box.scrollTop = box.scrollHeight;
+  if(m.name!==aktifIsim) bildirimGonder(m.name,m.message);
+  sonMesajId = m.id;
+  // cache güncelle
+  try{
+    const cache = JSON.parse(localStorage.getItem("msgs_"+aktifOda.id)||"[]");
+    cache.push(m);
+    localStorage.setItem("msgs_"+aktifOda.id, JSON.stringify(cache.slice(-200)));
+  }catch(e){}
 }
 
 // MESAJLAR
@@ -1089,6 +1156,8 @@ async function duyuruToggle(){
 }
 
 // YÖNETİCİ
+function panelKapat(){ el("yoneticiPanel").style.display="none"; }
+function panelDışıKapat(e){ if(e.target===el("yoneticiPanel")) panelKapat(); }
 function panelToggle(){
   const p=el("yoneticiPanel");
   p.style.display=p.style.display==="block"?"none":"block";
@@ -1130,7 +1199,7 @@ async function odaOlustur(){
   aktifOda=data;aktifIsim=isim;
   yeniOdaGizle();gizle("anaSayfa");
   await sohbeteGir();
-  yoneticiMi=true;goster("yoneticiPanel");
+  yoneticiMi=true;el("yoneticiPanel").style.display="flex";
   el("yGiris").style.display="none";el("yOnaylandi").style.display="block";duyuruGuncelle();
 }
 
@@ -1138,6 +1207,7 @@ async function odaOlustur(){
 async function cik(){
   el("altNav").style.display="flex";
   clearInterval(timer);clearInterval(presTimer);timer=null;presTimer=null;
+  if(realtimeChannel){sb.removeChannel(realtimeChannel);realtimeChannel=null;}
   await presenceCik();
   aktifOda=null;aktifIsim="";yoneticiMi=false;
   el("mesajlar").innerHTML="";
@@ -1433,12 +1503,19 @@ function authGuncelle(){
 function authAc(){ goster("authOverlay"); authTab("giris"); }
 function authKapat(){ gizle("authOverlay"); }
 function authTab(t){
+  el("girisForm").style.display="none";
+  el("kayitForm").style.display="none";
+  el("sifreUnuttumForm").style.display="none";
+  el("girisTab").classList.remove("aktif");
+  el("kayitTab").classList.remove("aktif");
   if(t==="giris"){
-    el("girisForm").style.display=""; el("kayitForm").style.display="none";
-    el("girisTab").classList.add("aktif"); el("kayitTab").classList.remove("aktif");
+    el("girisForm").style.display="";
+    el("girisTab").classList.add("aktif");
+  } else if(t==="kayit"){
+    el("kayitForm").style.display="";
+    el("kayitTab").classList.add("aktif");
   } else {
-    el("girisForm").style.display="none"; el("kayitForm").style.display="";
-    el("girisTab").classList.remove("aktif"); el("kayitTab").classList.add("aktif");
+    el("sifreUnuttumForm").style.display="";
   }
 }
 
@@ -1446,40 +1523,51 @@ async function girisYap(){
   const ad = el("girisAd").value.trim();
   const sifre = el("girisSifre").value;
   if(!ad||!sifre){ el("girisErr").textContent="Tüm alanları doldur!"; return; }
-  const {data,error} = await sb.from("users").select().eq("username",ad).eq("password",sifre).single();
-  if(error||!data){ el("girisErr").textContent="Kullanıcı adı veya şifre hatalı!"; return; }
-  aktifHesap = {id:data.id, username:data.username, created_at:data.created_at};
+  el("girisErr").textContent="Giriş yapılıyor...";
+  // Kullanıcı adından e-postayı bul
+  const {data:user} = await sb.from("users").select("email,id,username,created_at").eq("username",ad).single();
+  if(!user){ el("girisErr").textContent="Kullanıcı bulunamadı!"; return; }
+  const {data:authData, error:authError} = await sb.auth.signInWithPassword({email:user.email, password:sifre});
+  if(authError){ el("girisErr").textContent="Şifre hatalı!"; return; }
+  aktifHesap = {id:user.id, username:user.username, email:user.email, created_at:user.created_at};
   localStorage.setItem("mukoChatHesap", JSON.stringify(aktifHesap));
-  authGuncelle();
-  authKapat();
+  authGuncelle(); authKapat();
   el("girisErr").textContent="";
 }
 
 async function kayitOl(){
   const ad = el("kayitAd").value.trim();
+  const email = el("kayitEmail").value.trim().toLowerCase();
   const s1 = el("kayitSifre").value;
   const s2 = el("kayitSifre2").value;
-  if(!ad||!s1||!s2){ el("kayitErr").textContent="Tüm alanları doldur!"; return; }
+  if(!ad||!email||!s1||!s2){ el("kayitErr").textContent="Tüm alanları doldur!"; return; }
   if(ad.length < 3){ el("kayitErr").textContent="Kullanıcı adı en az 3 karakter olmalı!"; return; }
-  if(s1.length < 4){ el("kayitErr").textContent="Şifre en az 4 karakter olmalı!"; return; }
+  if(!email.includes("@")){ el("kayitErr").textContent="Geçerli bir e-posta gir!"; return; }
+  if(s1.length < 6){ el("kayitErr").textContent="Şifre en az 6 karakter olmalı!"; return; }
   if(s1!==s2){ el("kayitErr").textContent="Şifreler eşleşmiyor!"; return; }
-  // Kullanıcı adı var mı?
   el("kayitErr").textContent="Kontrol ediliyor...";
+  // Kullanıcı adı kontrolü
   const {data:mevcutlar} = await sb.from("users").select("id").eq("username",ad);
   if(mevcutlar && mevcutlar.length>0){ el("kayitErr").textContent="Bu kullanıcı adı alınmış! ❌"; return; }
+  // E-posta kontrolü
+  const {data:emailMevcut} = await sb.from("users").select("id").eq("email",email);
+  if(emailMevcut && emailMevcut.length>0){ el("kayitErr").textContent="Bu e-posta zaten kayıtlı! ❌"; return; }
   el("kayitErr").textContent="";
-  const {data,error} = await sb.from("users").insert([{username:ad,password:s1}]).select().single();
-  if(error||!data){ el("kayitErr").textContent="Kayıt hatası: "+(error?.message||"Bilinmeyen hata"); return; }
-  aktifHesap = {id:data.id, username:data.username, created_at:data.created_at};
+  // Supabase Auth ile kayıt
+  const {data:authData, error:authError} = await sb.auth.signUp({email, password:s1});
+  if(authError){ el("kayitErr").textContent="Kayıt hatası: "+authError.message; return; }
+  // users tablosuna kaydet
+  const {data,error} = await sb.from("users").insert([{id:authData.user.id, username:ad, email, password:s1}]).select().single();
+  if(error||!data){ el("kayitErr").textContent="Kayıt hatası: "+(error?.message||""); return; }
+  aktifHesap = {id:data.id, username:data.username, email:data.email, created_at:data.created_at};
   localStorage.setItem("mukoChatHesap", JSON.stringify(aktifHesap));
-  authGuncelle();
-  authKapat();
-  el("kayitErr").textContent="";
+  authGuncelle(); authKapat();
   alert("Hoş geldin, "+ad+"! ✅");
 }
 
-function hesapCikis(){
+async function hesapCikis(){
   if(!confirm("Çıkış yapmak istiyor musun?")) return;
+  await sb.auth.signOut();
   aktifHesap = null;
   localStorage.removeItem("mukoChatHesap");
   authGuncelle();
@@ -1494,6 +1582,18 @@ function yeniOdaKontrol(){
   yeniOdaGoster();
 }
 
+async function sifreUnuttum(){
+  const email = el("sifreUnuttumEmail").value.trim();
+  if(!email){ el("sifreUnuttumErr").textContent="E-posta gir!"; return; }
+  el("sifreUnuttumErr").textContent="Gönderiliyor...";
+  const {error} = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: "https://mukobaba.github.io/MukoCanChat/"
+  });
+  if(error){ el("sifreUnuttumErr").textContent="Hata: "+error.message; return; }
+  el("sifreUnuttumErr").style.color="#34d399";
+  el("sifreUnuttumErr").textContent="✅ Mail gönderildi! Gelen kutunu kontrol et.";
+}
+
 // ===== PROFİL =====
 async function profilAc(){
   if(!aktifHesap) return;
@@ -1501,11 +1601,11 @@ async function profilAc(){
   el("profilAvatar").textContent = ad[0].toUpperCase();
   el("profilAdText").textContent = ad;
   const tarih = new Date(aktifHesap.created_at).toLocaleDateString("tr-TR",{year:"numeric",month:"long",day:"numeric"});
-  el("profilTarih").textContent = "Üyelik: "+tarih;
+  el("profilTarih").textContent = "Üyelik: "+tarih+(aktifHesap.email?" • "+aktifHesap.email:"");
   // Bu kullanıcının kurduğu odalar - owner_key localStorage'da yok
   // owner_key varsa rooms'dan çekelim
   const odaDiv = el("profilOdalar");
-  const {data:odalar} = await sb.from("rooms").select("name,created_at").eq("user_id",aktifHesap.id).order("created_at",{ascending:false});
+  const {data:odalar} = await sb.from("rooms").select("id,name,created_at").eq("user_id",aktifHesap.id).order("created_at",{ascending:false});
   if(!odalar||odalar.length===0){ odaDiv.innerHTML='<div style="color:#2a1e42;font-size:13px">Henüz oda yok</div>'; }
   else {
     odaDiv.innerHTML = odalar.map(o=>`
@@ -1513,9 +1613,12 @@ async function profilAc(){
         <span>#${safe(o.name)}</span>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:11px;color:#2a1e42">${new Date(o.created_at).toLocaleDateString("tr-TR")}</span>
-          <button onclick="profilOdaSil('${o.id}','${safe(o.name)}')" style="background:#1a0505;border:1px solid #3a1010;color:#f87171;border-radius:8px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:inherit">Sil</button>
+          <button class="profil-sil-btn" data-id="${o.id}" data-ad="${safe(o.name)}" style="background:#1a0505;border:1px solid #3a1010;color:#f87171;border-radius:8px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:inherit">Sil</button>
         </div>
       </div>`).join("");
+    odaDiv.querySelectorAll(".profil-sil-btn").forEach(btn=>{
+      btn.addEventListener("click", ()=>profilOdaSil(btn.dataset.id, btn.dataset.ad));
+    });
   }
   el("profilOverlay").style.display="flex";
 }
@@ -1523,8 +1626,10 @@ function profilKapat(){ el("profilOverlay").style.display="none"; }
 
 async function profilOdaSil(odaId, odaAd){
   if(!confirm("#"+odaAd+" odasını silmek istiyor musun? Bu işlem geri alınamaz!")) return;
-  await sb.from("rooms").delete().eq("id",odaId);
-  profilAc(); // listeyi yenile
+  const {error} = await sb.from("rooms").delete().eq("id",odaId);
+  if(error){ alert("Hata: "+error.message); return; }
+  alert("Oda silindi! ✅");
+  profilAc();
 }
 
 // ===== DM SAYFA FONKSİYONLARI =====
@@ -1680,11 +1785,17 @@ function dmAc(toId, toAd){
   arkadasKapat();
   dmMesajlariYukle();
   if(dmInterval) clearInterval(dmInterval);
-  dmInterval = setInterval(dmMesajlariYukle, 3000);
+  // DM realtime
+  const dmChannel = sb.channel("dm:"+aktifHesap.id)
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages",
+      filter:"to_id=eq."+aktifHesap.id},
+      async()=>{ await dmMesajlariYukle(); }
+    ).subscribe();
+  dmInterval = dmChannel; // cleanup için sakla
 }
 function dmKapat(){
   el("dmOverlay").style.display="none";
-  if(dmInterval){ clearInterval(dmInterval); dmInterval=null; }
+  if(dmInterval){ try{sb.removeChannel(dmInterval);}catch(e){} dmInterval=null; }
   aktifDmKisi=null;
 }
 
