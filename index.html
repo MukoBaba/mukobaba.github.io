@@ -5,285 +5,339 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MukoCan Chat</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, sans-serif; background: #0f0620; color: #fff; min-height: 100vh; }
-    .wrap { max-width: 500px; margin: 0 auto; padding: 16px; }
-    h1 { color: #ffd54a; text-align: center; margin-bottom: 4px; font-size: 26px; }
-    .subtitle { color: #aa98d9; text-align: center; font-size: 13px; margin-bottom: 20px; }
-    .card { background: #1a0b33; border: 1px solid #3d216d; border-radius: 16px; padding: 20px; margin-bottom: 16px; }
-    input[type=text], input[type=password], input[type=number] { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #53308b; background: #120824; color: #fff; margin-top: 10px; font-size: 16px; outline: none; }
-    input:focus { border-color: #8c52ff; }
-    button { width: 100%; padding: 13px; border-radius: 10px; border: none; background: #6a2cff; color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-    button:hover { opacity: 0.9; }
-    .btn-gray { background: #3d1a7a; }
-    .btn-red { background: #7a1010; }
-    .btn-yellow { background: #7a5c00; }
-    .error { color: #ff6b6b; font-size: 13px; background: rgba(255,0,0,0.1); padding: 8px; border-radius: 8px; margin-top: 8px; display: none; }
-    .status { color: #7dffbc; font-size: 13px; text-align: center; margin: 5px 0; }
-    .section-title { color: #ffd54a; font-size: 15px; font-weight: bold; margin-bottom: 12px; }
-    .label { font-size: 12px; color: #aa98d9; margin-top: 12px; margin-bottom: -6px; display: block; }
-    .oda-item { background: #120824; border: 1px solid #3d216d; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: border-color 0.2s; }
-    .oda-item:hover { border-color: #8c52ff; }
-    .oda-adi { font-size: 16px; font-weight: bold; color: #fff; }
-    .oda-info { font-size: 12px; color: #aa98d9; margin-top: 3px; display: flex; gap: 8px; flex-wrap: wrap; }
-    .oda-bos { color: #aa98d9; font-size: 14px; text-align: center; padding: 20px; }
-    .yeni-btn { background: #1f0d3d; border: 1px dashed #53308b; border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; color: #aa98d9; font-size: 14px; margin-bottom: 16px; }
-    .yeni-btn:hover { border-color: #8c52ff; color: #fff; }
-    .chat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
-    .chat-header h2 { color: #ffd54a; font-size: 18px; }
-    .chat-box { height: 300px; overflow-y: auto; background: #120824; border: 1px solid #53308b; border-radius: 10px; padding: 10px; margin: 8px 0; }
-    .msg { background: #241046; border-left: 3px solid #8c52ff; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
-    .msg.benim { border-left-color: #ffd54a; background: #1f1000; }
-    .isim { color: #ffd54a; font-size: 12px; font-weight: bold; }
-    .msg.benim .isim { color: #ffb300; }
-    .icerik { color: #fff; font-size: 15px; margin-top: 2px; }
-    .saat { color: #aa98d9; font-size: 11px; }
-    .alinti-blok { background: #0d0820; border-left: 2px solid #8c52ff; padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #aa98d9; margin-bottom: 4px; }
-    .alinti-btn { cursor: pointer; font-size: 11px; color: #53308b; margin-left: 6px; }
-    .alinti-btn:hover { color: #aa98d9; }
-    .alinti-onizleme { display: none; background: #120824; border-left: 3px solid #8c52ff; border-radius: 8px; padding: 6px 10px; margin-top: 8px; font-size: 12px; color: #aa98d9; justify-content: space-between; align-items: center; }
-    .mesaj-alani { display: flex; align-items: center; gap: 8px; margin-top: 10px; background: #120824; border: 1px solid #53308b; border-radius: 30px; padding: 6px 6px 6px 16px; transition: border-color 0.2s; }
-    .mesaj-alani:focus-within { border-color: #8c52ff; }
-    .mesaj-alani input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 15px; padding: 6px 0; margin: 0; }
-    .mesaj-alani input::placeholder { color: #6a4f9e; }
-    .gonder-btn { width: 42px; height: 42px; border-radius: 50%; background: #6a2cff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.2s; margin: 0; padding: 0; }
-    .gonder-btn:hover { background: #8c52ff; }
-    .gonder-btn svg { width: 20px; height: 20px; fill: #fff; }
-    .online-ozet { display: inline-flex; align-items: center; gap: 6px; background: #0d0820; border: 1px solid #2a1f4a; border-radius: 20px; padding: 5px 12px; cursor: pointer; font-size: 13px; color: #7dffbc; margin: 6px 0; }
-    .online-ozet:hover { border-color: #7dffbc; }
-    .online-nokta { width: 8px; height: 8px; border-radius: 50%; background: #7dffbc; box-shadow: 0 0 5px #7dffbc; flex-shrink: 0; }
-    .duyuru-banner { background: rgba(255,200,0,0.08); border: 1px solid #7a5c00; border-radius: 10px; padding: 8px 12px; margin: 6px 0; font-size: 13px; color: #ffd54a; text-align: center; }
-    .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; }
-    .popup-kutu { background: #1a0b33; border: 1px solid #3d216d; border-radius: 16px; padding: 20px; width: 290px; max-height: 360px; overflow-y: auto; }
-    .popup-baslik { color: #ffd54a; font-weight: bold; font-size: 15px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .popup-kapat { cursor: pointer; color: #aa98d9; font-size: 20px; line-height: 1; padding: 0 4px; }
-    .popup-kapat:hover { color: #fff; }
-    .popup-kisi { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #2a1f4a; font-size: 14px; }
-    .popup-kisi:last-child { border-bottom: none; }
-    .yonetici-panel { display: none; background: #1a0b33; border: 1px solid #3d216d; border-radius: 12px; padding: 16px; margin-top: 4px; }
-    .alt-cikinti { text-align: center; margin-top: 6px; }
-    .alt-cikinti-btn { display: inline-block; background: #1f0d3d; border: 1px solid #3d216d; border-top: none; border-radius: 0 0 12px 12px; padding: 4px 24px; cursor: pointer; font-size: 12px; color: #aa98d9; }
-    .alt-cikinti-btn:hover { color: #fff; }
+    body { font-family: 'Inter', Arial, sans-serif; background: #0c0c14; color: #e8e0f0; min-height: 100vh; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2d1a52; border-radius: 4px; }
+
+    .wrap { max-width: 460px; margin: 0 auto; padding: 20px 16px; }
+    .logo { text-align: center; padding: 28px 0 20px; }
+    .logo-title { font-size: 26px; font-weight: 700; background: linear-gradient(135deg, #a78bfa, #fbbf24); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .logo-sub { color: #3d2d5a; font-size: 13px; margin-top: 4px; }
+
+    .card { background: #12101e; border: 1px solid #1e1a32; border-radius: 18px; padding: 20px; margin-bottom: 14px; }
+    .label { display: block; font-size: 12px; color: #4a3a6a; margin: 14px 0 5px; font-weight: 500; letter-spacing: 0.3px; }
+    input[type=text], input[type=password], input[type=number] {
+      width: 100%; padding: 11px 14px; border-radius: 12px;
+      border: 1.5px solid #1e1a32; background: #0c0c14;
+      color: #e8e0f0; font-size: 14px; outline: none; font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #6d28d9; }
+    input::placeholder { color: #2a1e42; }
+    .btn { width: 100%; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, #6d28d9, #7c3aed); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 10px; transition: opacity 0.2s; font-family: inherit; }
+    .btn:hover { opacity: 0.85; }
+    .btn-gray { background: #0c0c14; border: 1.5px solid #1e1a32; color: #4a3a6a; }
+    .btn-gray:hover { color: #a78bfa; opacity: 1; }
+    .btn-red { background: #1a0505; border: 1.5px solid #3a1010; color: #f87171; }
+    .btn-yellow { background: #1a1200; border: 1.5px solid #3a2800; color: #fbbf24; }
+    .err { color: #f87171; font-size: 13px; background: rgba(248,113,113,0.07); padding: 8px 12px; border-radius: 10px; margin-top: 8px; display: none; border: 1px solid rgba(248,113,113,0.15); }
+    .section-title { font-size: 12px; font-weight: 600; color: #4c1d95; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
 
     /* KVKK */
-    .kvkk-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; }
-    .kvkk-kutu { background: #1a0b33; border: 1px solid #3d216d; border-radius: 16px; padding: 24px; max-width: 440px; width: 100%; }
-    .kvkk-baslik { color: #ffd54a; font-size: 17px; font-weight: bold; margin-bottom: 12px; }
-    .kvkk-metin { font-size: 13px; color: #c8bde0; line-height: 1.6; max-height: 220px; overflow-y: auto; background: #120824; border-radius: 10px; padding: 12px; margin-bottom: 14px; }
-    .kvkk-onay { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #aa98d9; margin-bottom: 14px; cursor: pointer; }
-    .kvkk-onay input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; margin-top: 1px; accent-color: #6a2cff; }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(6px); }
+    .kvkk-box { background: #12101e; border: 1px solid #1e1a32; border-radius: 20px; padding: 24px; max-width: 420px; width: 100%; }
+    .kvkk-title { font-size: 16px; font-weight: 700; color: #a78bfa; margin-bottom: 12px; }
+    .kvkk-text { font-size: 13px; color: #4a3a6a; line-height: 1.65; max-height: 190px; overflow-y: auto; background: #0c0c14; border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1px solid #1e1a32; }
+    .kvkk-check { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: #4a3a6a; margin-bottom: 16px; cursor: pointer; }
+    .kvkk-check input { width: 17px; height: 17px; flex-shrink: 0; accent-color: #6d28d9; cursor: pointer; margin-top: 1px; }
+
+    /* ANA SAYFA */
+    .new-room-btn { background: #0c0c14; border: 1.5px dashed #2a1e42; border-radius: 14px; padding: 14px; text-align: center; cursor: pointer; color: #3d2d5a; font-size: 14px; margin-bottom: 12px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .new-room-btn:hover { border-color: #6d28d9; color: #a78bfa; }
+    .oda-listesi { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+    .oda-item { background: #0c0c14; border: 1.5px solid #1a1628; border-radius: 14px; padding: 14px 16px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: all 0.2s; }
+    .oda-item:hover { border-color: #4c1d95; background: #100e1c; }
+    .oda-adi { font-size: 15px; font-weight: 600; color: #e8e0f0; }
+    .oda-etiketler { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+    .etiket { font-size: 11px; color: #3d2d5a; background: #12101e; border-radius: 20px; padding: 2px 9px; border: 1px solid #1e1a32; }
+    .oda-bos { color: #2a1e42; font-size: 14px; text-align: center; padding: 28px 0; }
+    .ara-input { width: 100%; padding: 10px 14px; border-radius: 12px; border: 1.5px solid #1a1628; background: #0c0c14; color: #e8e0f0; font-size: 14px; outline: none; margin-bottom: 14px; font-family: inherit; transition: border-color 0.2s; }
+    .ara-input:focus { border-color: #6d28d9; }
+    .ara-input::placeholder { color: #2a1e42; }
+
+    /* SOHBET */
+    .chat-wrap { display: flex; flex-direction: column; height: 100dvh; max-width: 460px; margin: 0 auto; }
+    .chat-header { background: #0e0c1a; border-bottom: 1px solid #1a1628; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .chat-oda-adi { font-size: 16px; font-weight: 700; color: #e8e0f0; display: flex; align-items: center; gap: 5px; }
+    .oda-hash { color: #4c1d95; font-size: 18px; }
+    .header-sag { display: flex; align-items: center; gap: 8px; }
+    .chat-isim-chip { background: #12101e; border-radius: 20px; padding: 4px 11px; font-size: 12px; color: #4a3a6a; border: 1px solid #1e1a32; }
+    .cik-btn { background: transparent; border: 1.5px solid #1e1a32; color: #3d2d5a; font-size: 13px; padding: 6px 12px; border-radius: 10px; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .cik-btn:hover { border-color: #6d28d9; color: #a78bfa; }
+
+    .meta-bar { padding: 7px 16px; display: flex; align-items: center; gap: 8px; background: #0c0c14; border-bottom: 1px solid #1a1628; flex-shrink: 0; }
+    .online-pill { display: inline-flex; align-items: center; gap: 5px; background: #0a1a12; border: 1px solid #0f2e1c; border-radius: 20px; padding: 4px 11px; cursor: pointer; font-size: 12px; color: #34d399; font-weight: 500; transition: all 0.2s; }
+    .online-pill:hover { border-color: #34d399; }
+    .online-dot { width: 6px; height: 6px; border-radius: 50%; background: #34d399; box-shadow: 0 0 6px #34d399; flex-shrink: 0; }
+    .bildirim-pill { display: inline-flex; align-items: center; gap: 5px; background: #0c0c14; border: 1px solid #1a1628; border-radius: 20px; padding: 4px 11px; cursor: pointer; font-size: 12px; color: #3d2d5a; transition: all 0.2s; }
+    .bildirim-pill.aktif { color: #34d399; border-color: #0f2e1c; background: #0a1a12; }
+    .durum-dot { width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; margin-left: auto; flex-shrink: 0; }
+    .durum-dot.ok { background: #34d399; box-shadow: 0 0 6px #34d399; }
+    .duyuru-bar { background: rgba(124,58,237,0.08); border-bottom: 1px solid #2a1a48; padding: 7px 16px; text-align: center; font-size: 12px; color: #fbbf24; flex-shrink: 0; display: none; font-weight: 500; letter-spacing: 0.2px; }
+
+    .mesajlar { flex: 1; overflow-y: auto; padding: 14px 16px; display: flex; flex-direction: column; gap: 3px; }
+    .msg { border-radius: 16px; padding: 9px 13px; max-width: 82%; }
+    .msg.diger { background: #12101e; border: 1px solid #1e1a32; border-bottom-left-radius: 4px; align-self: flex-start; }
+    .msg.benim { background: linear-gradient(135deg, #2e0b5e, #3b0f75); border-bottom-right-radius: 4px; align-self: flex-end; margin-left: auto; }
+    .msg-isim { font-size: 11px; font-weight: 600; color: #7c3aed; margin-bottom: 3px; }
+    .msg.benim .msg-isim { color: #fbbf24; }
+    .msg-icerik { font-size: 14px; color: #e8e0f0; line-height: 1.45; word-break: break-word; }
+    .msg-alt { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+    .msg-saat { font-size: 10px; color: #2e2548; }
+    .msg.benim .msg-saat { color: #5a3a8a; }
+    .alinti-btn { font-size: 11px; color: #2a1e42; cursor: pointer; padding: 1px 6px; border-radius: 6px; transition: all 0.15s; }
+    .alinti-btn:hover { color: #a78bfa; background: rgba(124,58,237,0.12); }
+    .alinti-blok { background: rgba(0,0,0,0.3); border-left: 2px solid #6d28d9; border-radius: 6px; padding: 4px 8px; font-size: 11px; color: #4a3a6a; margin-bottom: 5px; line-height: 1.4; }
+
+    .chat-footer { background: #0e0c1a; border-top: 1px solid #1a1628; padding: 10px 16px 14px; flex-shrink: 0; }
+    .chat-err { color: #f87171; font-size: 12px; text-align: center; padding: 4px; display: none; margin-bottom: 6px; }
+    .alinti-onizleme { display: none; background: #12101e; border-left: 3px solid #6d28d9; border-radius: 10px; padding: 7px 10px; margin-bottom: 8px; font-size: 12px; color: #4a3a6a; justify-content: space-between; align-items: center; gap: 8px; }
+    .alinti-kapat { cursor: pointer; color: #3d2d5a; font-size: 18px; line-height: 1; flex-shrink: 0; transition: color 0.15s; }
+    .alinti-kapat:hover { color: #f87171; }
+    .mesaj-kutu { display: flex; align-items: center; gap: 8px; background: #12101e; border: 1.5px solid #1e1a32; border-radius: 28px; padding: 5px 5px 5px 16px; transition: border-color 0.2s; }
+    .mesaj-kutu:focus-within { border-color: #6d28d9; }
+    .mesaj-kutu input { flex: 1; background: transparent; border: none; outline: none; color: #e8e0f0; font-size: 14px; padding: 6px 0; font-family: inherit; }
+    .mesaj-kutu input::placeholder { color: #2a1e42; }
+    .gonder-btn { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #6d28d9, #7c3aed); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: opacity 0.2s; }
+    .gonder-btn:hover { opacity: 0.85; }
+    .gonder-btn svg { width: 16px; height: 16px; fill: #fff; }
+    .gonder-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    .kilitli-bilgi { display: none; text-align: center; color: #2e2548; font-size: 13px; padding: 10px 0; }
+    .footer-extra { display: flex; justify-content: center; margin-top: 8px; }
+    .yonetici-toggle { background: transparent; border: 1px solid #1a1628; border-radius: 10px; padding: 4px 16px; font-size: 12px; color: #2e2548; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .yonetici-toggle:hover { border-color: #2a1e42; color: #4a3a6a; }
+    .yonetici-panel { display: none; background: #0c0c14; border: 1px solid #1a1628; border-radius: 14px; padding: 14px; margin-top: 8px; }
+
+    /* POPUP */
+    .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; display: none; align-items: flex-end; justify-content: center; padding: 16px; backdrop-filter: blur(4px); }
+    .popup-box { background: #12101e; border: 1px solid #1e1a32; border-radius: 20px; padding: 20px; width: 100%; max-width: 420px; max-height: 320px; overflow-y: auto; }
+    .popup-title { color: #a78bfa; font-weight: 700; font-size: 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .popup-kapat { cursor: pointer; color: #2e2548; font-size: 20px; line-height: 1; transition: color 0.15s; }
+    .popup-kapat:hover { color: #e8e0f0; }
+    .popup-kisi { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #1a1628; font-size: 14px; color: #c0b0e0; }
+    .popup-kisi:last-child { border-bottom: none; }
   </style>
 </head>
 <body>
 
-<!-- KVKK ONAY -->
-<div class="kvkk-overlay" id="kvkkOverlay">
-  <div class="kvkk-kutu">
-    <div class="kvkk-baslik">🔒 Gizlilik & Kullanım Koşulları</div>
-    <div class="kvkk-metin">
+<!-- KVKK -->
+<div class="overlay" id="kvkkOverlay">
+  <div class="kvkk-box">
+    <div class="kvkk-title">🔒 Gizlilik & Kullanım Koşulları</div>
+    <div class="kvkk-text">
       <b>MukoCan Chat Aydınlatma Metni</b><br><br>
-      Bu platformu kullanırken yazdığınız mesajlar ve seçtiğiniz takma isim, <b>Supabase</b> altyapısında saklanmaktadır. Veriler yalnızca sohbet işlevini yerine getirmek amacıyla kullanılmakta olup üçüncü taraflarla paylaşılmamaktadır.<br><br>
-      <b>Saklanan veriler:</b><br>
-      • Takma isim (gerçek isim değil)<br>
-      • Yazdığınız mesajlar<br>
-      • Mesaj tarihi ve saati<br>
-      • Geçici çevrimiçi durum bilgisi<br><br>
-      <b>Önemli notlar:</b><br>
-      • Gerçek adınızı veya kişisel bilgilerinizi yazmayınız.<br>
-      • Bu platform 13 yaş ve üzeri kullanıcılara yöneliktir.<br>
-      • Hakaret, tehdit veya yasadışı içerik paylaşmak yasaktır.<br>
-      • Verilerinizin silinmesini talep etmek için oda yöneticisiyle iletişime geçebilirsiniz.<br><br>
-      6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında bilgilendirilmiş olduğunuzu kabul edersiniz.
+      Bu platformu kullanırken yazdığınız mesajlar ve seçtiğiniz takma isim <b>Supabase</b> altyapısında saklanmaktadır. Veriler yalnızca sohbet işlevini yerine getirmek amacıyla kullanılmakta olup üçüncü taraflarla paylaşılmamaktadır.<br><br>
+      <b>Saklanan veriler:</b> Takma isim, mesajlar, mesaj tarihi/saati, geçici çevrimiçi durum.<br><br>
+      <b>Önemli:</b> Gerçek adınızı veya kişisel bilgilerinizi yazmayınız. Bu platform 13 yaş ve üzeri kullanıcılara yöneliktir. Hakaret, tehdit veya yasadışı içerik paylaşmak yasaktır.<br><br>
+      6698 sayılı KVKK kapsamında bilgilendirilmiş olduğunuzu kabul edersiniz.
     </div>
-    <label class="kvkk-onay">
-      <input type="checkbox" id="kvkkCheckbox" onchange="kvkkKontrol()" />
-      Aydınlatma metnini okudum, anladım ve kabul ediyorum.
+    <label class="kvkk-check">
+      <input type="checkbox" id="kvkkCb" onchange="kvkkKontrol()" />
+      Okudum, anladım ve kabul ediyorum.
     </label>
-    <button id="kvkkBtn" onclick="kvkkKabul()" disabled style="opacity:0.4;">Devam Et</button>
+    <button class="btn" id="kvkkBtn" onclick="kvkkKabul()" disabled style="opacity:0.3">Devam Et</button>
   </div>
 </div>
 
-<div class="wrap">
+<!-- ÇEVRİMİÇİ POPUP -->
+<div class="popup-overlay" id="onlinePopup">
+  <div class="popup-box" onclick="event.stopPropagation()">
+    <div class="popup-title">Çevrimiçi <span class="popup-kapat" onclick="popupKapat()">✕</span></div>
+    <div id="popupListe"></div>
+  </div>
+</div>
 
-  <!-- ANA SAYFA -->
-  <div id="anaSayfa">
-    <div style="padding-top:16px">
-      <h1>MukoCan Chat</h1>
-      <div class="subtitle">Bir odaya gir veya yeni oda oluştur</div>
+<!-- ANA SAYFA -->
+<div id="anaSayfa">
+  <div class="wrap">
+    <div class="logo">
+      <div class="logo-title">MukoCan Chat</div>
+      <div class="logo-sub">Bir odaya gir veya yeni oda oluştur</div>
     </div>
-    <div class="yeni-btn" onclick="yeniOdaGoster()">+ Yeni Oda Oluştur</div>
+
+    <div class="new-room-btn" onclick="yeniOdaGoster()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Yeni Oda Oluştur
+    </div>
+
     <div class="card" id="yeniOdaForm" style="display:none">
-      <div class="section-title">Yeni Oda Oluştur</div>
+      <div class="section-title">Yeni Oda</div>
       <span class="label">Oda adı</span>
       <input id="yeniAd" type="text" placeholder="Oda adı" />
       <span class="label">Giriş şifresi (opsiyonel)</span>
       <input id="yeniSifre" type="password" placeholder="Şifresiz bırakabilirsin" />
       <span class="label">Yönetici anahtarı</span>
-      <input id="yeniYoneticiKey" type="password" placeholder="Gizli anahtar belirle" />
-      <span class="label">Maksimum kişi sayısı (varsayılan: 50)</span>
-      <input id="yeniMaxUser" type="number" placeholder="Boş bırakırsan 50 olur" min="2" max="500" />
+      <input id="yeniYKey" type="password" placeholder="Gizli anahtar belirle" />
+      <span class="label">Maks kişi (varsayılan: 50)</span>
+      <input id="yeniMax" type="number" placeholder="Boş bırakırsan 50 olur" min="2" max="500" />
       <span class="label">Takma ismin</span>
       <input id="yeniIsim" type="text" placeholder="Takma ismin" />
-      <button onclick="odaOlustur()">Odayı Oluştur ve Gir</button>
-      <button class="btn-gray" onclick="yeniOdaGizle()">İptal</button>
-      <div class="error" id="yeniErr"></div>
+      <button class="btn" onclick="odaOlustur()">Oluştur ve Gir</button>
+      <button class="btn btn-gray" onclick="yeniOdaGizle()" style="margin-top:6px">İptal</button>
+      <div class="err" id="yeniErr"></div>
     </div>
+
     <div class="card">
       <div class="section-title">Odalar</div>
-      <input id="odaArama" type="text" placeholder="🔍 Oda ara..." oninput="odalariFiltrele()" style="padding:9px 12px;font-size:14px;margin-bottom:12px;" />
-      <div id="odaListesi" style="max-height:260px;overflow-y:auto;"><div class="oda-bos">Yükleniyor...</div></div>
+      <input class="ara-input" id="odaAra" type="text" placeholder="Oda ara..." oninput="odalariFiltrele()" />
+      <div class="oda-listesi" id="odaListesi"><div class="oda-bos">Yükleniyor...</div></div>
     </div>
   </div>
-
-  <!-- ŞİFRE EKRANI -->
-  <div id="sifreSayfasi" style="display:none">
-    <div class="card" style="margin-top:40px">
-      <h1 id="sifreOdaAdi">Oda</h1>
-      <div class="subtitle">Bu oda şifreli</div>
-      <input id="sifreGir" type="password" placeholder="Giriş şifresi" />
-      <input id="sifreIsim" type="text" placeholder="Takma ismin" />
-      <button onclick="sifreDogrula()">Gir</button>
-      <button class="btn-gray" onclick="anaSayfayaDon()">Geri</button>
-      <div class="error" id="sifreErr"></div>
-    </div>
-  </div>
-
-  <!-- İSİM EKRANI -->
-  <div id="isimSayfasi" style="display:none">
-    <div class="card" style="margin-top:40px">
-      <h1 id="isimOdaAdi">Oda</h1>
-      <input id="isimGir" type="text" placeholder="Takma ismin" />
-      <button onclick="isimleGir()">Odaya Gir</button>
-      <button class="btn-gray" onclick="anaSayfayaDon()">Geri</button>
-      <div class="error" id="isimErr"></div>
-    </div>
-  </div>
-
-  <!-- SOHBET EKRANI -->
-  <div id="chatSayfasi" style="display:none">
-    <div class="card" style="padding-bottom:4px">
-      <div class="chat-header">
-        <h2 id="chatOdaAdi">Oda</h2>
-        <div style="display:flex;gap:6px;align-items:center">
-          <span id="chatIsimGoster" style="color:#aa98d9;font-size:13px"></span>
-          <button onclick="cik()" style="width:auto;padding:7px 12px;margin-top:0;background:#3d1a7a;font-size:13px">Çık</button>
-        </div>
-      </div>
-      <div class="status" id="durumYazi">Bağlanıyor...</div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <div class="online-ozet" onclick="popupAc()">
-          <span class="online-nokta"></span>
-          <span id="onlineOzet">0 çevrimiçi</span>
-        </div>
-        <div id="bildirimBtn" onclick="bildirimToggle()" style="display:inline-flex;align-items:center;gap:5px;background:#0d0820;border:1px solid #2a1f4a;border-radius:20px;padding:5px 12px;cursor:pointer;font-size:13px;color:#aa98d9;">
-          🔔 <span id="bildirimBtnYazi">Bildirimleri Aç</span>
-        </div>
-      </div>
-
-      <!-- DUYURU BANNER -->
-      <div class="duyuru-banner" id="duyuruBanner" style="display:none">
-        📢 Duyuru modu açık — sadece yönetici yazabilir
-      </div>
-
-      <div class="chat-box" id="mesajlar"></div>
-      <div class="error" id="chatErr"></div>
-
-      <!-- ALINTI ÖNİZLEME -->
-      <div class="alinti-onizleme" id="alintiOnizleme">
-        <span id="alintiOnizlemeMetin" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:88%"></span>
-        <span onclick="alintiTemizle()" style="cursor:pointer;color:#ff6b6b;font-size:16px;flex-shrink:0;">✕</span>
-      </div>
-
-      <div class="mesaj-alani" id="mesajRow">
-        <input id="mesajIn" type="text" placeholder="Mesaj yaz..." />
-        <button class="gonder-btn" onclick="gonder()" id="gonderBtn">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
-        </button>
-      </div>
-      <div id="duyuruKilitBilgi" style="display:none;text-align:center;color:#aa98d9;font-size:13px;margin-top:8px;">🔇 Bu odada şu an sadece yönetici yazabilir</div>
-
-      <!-- ALT ÇIKINTI -->
-      <div class="alt-cikinti">
-        <div class="alt-cikinti-btn" onclick="panelToggle()">⚙️ Yönetici</div>
-      </div>
-      <div class="yonetici-panel" id="yoneticiPanel">
-        <div id="yoneticiGiris">
-          <div style="font-size:13px;color:#aa98d9;margin-bottom:8px;">Yönetici anahtarını gir:</div>
-          <div style="display:flex;gap:8px;">
-            <input id="yoneticiKeyGir" type="password" placeholder="Anahtar" style="margin-top:0;font-size:13px;" />
-            <button onclick="yoneticiDogrula()" style="width:auto;padding:10px 14px;margin-top:0;font-size:13px;background:#3d1a7a;">Doğrula</button>
-          </div>
-          <div class="error" id="yoneticiErr"></div>
-        </div>
-        <div id="yoneticiOnaylandi" style="display:none;">
-          <div style="color:#7dffbc;font-size:13px;margin-bottom:10px;">⭐ Yönetici olarak doğrulandın</div>
-          <button id="duyuruToggleBtn" class="btn-yellow" style="font-size:13px;padding:10px;" onclick="duyuruToggle()">📢 Duyuru Modunu Aç</button>
-          <button class="btn-red" style="font-size:13px;padding:10px;margin-top:8px;" onclick="odaSil()">🗑️ Odayı Sil</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<!-- ÇEVRİMİÇİ POPUP -->
-<div class="popup-overlay" id="onlinePopup">
-  <div class="popup-kutu" onclick="event.stopPropagation()">
-    <div class="popup-baslik">
-      🟢 Çevrimiçi
-      <span class="popup-kapat" onclick="popupKapat()">✕</span>
+<!-- ŞİFRE -->
+<div id="sifreSayfasi" style="display:none">
+  <div class="wrap">
+    <div class="card" style="margin-top:50px">
+      <div style="font-size:20px;font-weight:700;color:#e8e0f0;margin-bottom:4px" id="sifreBaslik"></div>
+      <div style="color:#3d2d5a;font-size:13px;margin-bottom:2px">Bu oda şifreli</div>
+      <span class="label">Şifre</span>
+      <input id="sifreGir" type="password" placeholder="Giriş şifresi" />
+      <span class="label">Takma ismin</span>
+      <input id="sifreIsim" type="text" placeholder="Takma ismin" />
+      <button class="btn" onclick="sifreDogrula()">Gir</button>
+      <button class="btn btn-gray" onclick="anaSayfayaDon()" style="margin-top:6px">Geri</button>
+      <div class="err" id="sifreErr"></div>
     </div>
-    <div id="popupListe"></div>
+  </div>
+</div>
+
+<!-- İSİM -->
+<div id="isimSayfasi" style="display:none">
+  <div class="wrap">
+    <div class="card" style="margin-top:50px">
+      <div style="font-size:20px;font-weight:700;color:#e8e0f0;margin-bottom:12px" id="isimBaslik"></div>
+      <span class="label">Takma ismin</span>
+      <input id="isimGir" type="text" placeholder="Takma ismin" />
+      <button class="btn" onclick="isimleGir()">Odaya Gir</button>
+      <button class="btn btn-gray" onclick="anaSayfayaDon()" style="margin-top:6px">Geri</button>
+      <div class="err" id="isimErr"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SOHBET -->
+<div id="chatSayfasi" style="display:none" class="chat-wrap">
+  <div class="chat-header">
+    <div class="chat-oda-adi">
+      <span class="oda-hash">#</span>
+      <span id="chatBaslik">Oda</span>
+    </div>
+    <div class="header-sag">
+      <span class="chat-isim-chip" id="chatIsimGoster"></span>
+      <button class="cik-btn" onclick="cik()">Çık</button>
+    </div>
+  </div>
+
+  <div class="meta-bar">
+    <div class="online-pill" onclick="popupAc()">
+      <span class="online-dot"></span>
+      <span id="onlineSayi">0</span>
+    </div>
+    <div class="bildirim-pill" id="bildirimBadge" onclick="bildirimToggle()">
+      🔔 <span id="bildirimYazi">Bildirim</span>
+    </div>
+    <div class="durum-dot" id="durumDot"></div>
+  </div>
+
+  <div class="duyuru-bar" id="duyuruBar">📢 Duyuru modu — sadece yönetici yazabilir</div>
+
+  <div class="mesajlar" id="mesajlar"></div>
+
+  <div class="chat-footer">
+    <div class="chat-err" id="chatErr"></div>
+    <div class="alinti-onizleme" id="alintiOnizleme">
+      <span id="alintiMetin" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <span class="alinti-kapat" onclick="alintiTemizle()">✕</span>
+    </div>
+    <div class="mesaj-kutu" id="mesajKutu">
+      <input id="mesajIn" type="text" placeholder="Mesaj yaz..." />
+      <button class="gonder-btn" id="gonderBtn" onclick="gonder()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+      </button>
+    </div>
+    <div class="kilitli-bilgi" id="kilitliBilgi">🔇 Sadece yönetici yazabilir</div>
+    <div class="footer-extra">
+      <button class="yonetici-toggle" onclick="panelToggle()">⚙️ Yönetici</button>
+    </div>
+    <div class="yonetici-panel" id="yoneticiPanel">
+      <div id="yGiris">
+        <span class="label" style="margin-top:0">Yönetici anahtarı</span>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <input id="yKey" type="password" placeholder="Anahtar" style="font-size:13px" />
+          <button onclick="yoneticiDogrula()" style="white-space:nowrap;padding:0 14px;border-radius:12px;border:none;background:#1e1a32;color:#a78bfa;font-size:13px;cursor:pointer;font-family:inherit;transition:opacity 0.2s">Gir</button>
+        </div>
+        <div class="err" id="yErr"></div>
+      </div>
+      <div id="yOnaylandi" style="display:none">
+        <div style="color:#34d399;font-size:12px;margin-bottom:10px;font-weight:600">⭐ Yönetici olarak doğrulandın</div>
+        <button class="btn btn-yellow" id="duyuruBtn" onclick="duyuruToggle()" style="font-size:13px;padding:10px">📢 Duyuru Modunu Aç</button>
+        <button class="btn btn-red" onclick="odaSil()" style="font-size:13px;padding:10px;margin-top:6px">🗑️ Odayı Sil</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const URL_ = "https://zxlbfzfccbdciqdmqmsy.supabase.co";
-const KEY_ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bGJmemZjY2JkY2lxZG1xbXN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTg4NDUsImV4cCI6MjA4ODgzNDg0NX0.4QmR0PGik--bMaSL7LugNAgxZsyzgFOiuXxh8B8V9FM";
-const sb = window.supabase.createClient(URL_, KEY_);
+const SB_URL = "https://zxlbfzfccbdciqdmqmsy.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bGJmemZjY2JkY2lxZG1xbXN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTg4NDUsImV4cCI6MjA4ODgzNDg0NX0.4QmR0PGik--bMaSL7LugNAgxZsyzgFOiuXxh8B8V9FM";
+const sb = window.supabase.createClient(SB_URL, SB_KEY);
 
-let aktifOda = null, aktifIsim = "", timer = null, presenceTimer = null, presenceId = null, yoneticiMi = false;
+let aktifOda = null, aktifIsim = "", yoneticiMi = false;
+let timer = null, presTimer = null, presenceId = null;
 let onlineKisiler = [], tumOdalar = [], alintiMsg = null;
+let bildirimAcik = false, sonMesajId = null;
 
 function safe(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-function goster(id) { document.getElementById(id).style.display = "block"; }
-function gosterflex(id) { document.getElementById(id).style.display = "flex"; }
-function gizle(id) { document.getElementById(id).style.display = "none"; }
-function hata(id, msg) { const e = document.getElementById(id); e.textContent = msg; e.style.display = "block"; }
-function hataGizle(id) { document.getElementById(id).style.display = "none"; }
-function durum(msg) { document.getElementById("durumYazi").textContent = msg; }
+function el(id) { return document.getElementById(id); }
+function goster(id, tip) { el(id).style.display = tip || "block"; }
+function gizle(id) { el(id).style.display = "none"; }
+function hata(id, msg) { el(id).textContent = msg; el(id).style.display = "block"; }
+function hataGizle(id) { el(id).style.display = "none"; }
 
 // KVKK
-function kvkkKontrol() {
-  const cb = document.getElementById("kvkkCheckbox");
-  const btn = document.getElementById("kvkkBtn");
-  btn.disabled = !cb.checked;
-  btn.style.opacity = cb.checked ? "1" : "0.4";
-}
-function kvkkKabul() {
-  localStorage.setItem("kvkk_kabul", "1");
-  gizle("kvkkOverlay");
-}
-if (localStorage.getItem("kvkk_kabul") === "1") gizle("kvkkOverlay");
+function kvkkKontrol() { const ok = el("kvkkCb").checked; el("kvkkBtn").disabled = !ok; el("kvkkBtn").style.opacity = ok ? "1" : "0.3"; }
+function kvkkKabul() { localStorage.setItem("kvkk","1"); gizle("kvkkOverlay"); }
+if (localStorage.getItem("kvkk") === "1") gizle("kvkkOverlay");
 
 // POPUP
 function popupAc() {
-  const liste = document.getElementById("popupListe");
-  liste.innerHTML = onlineKisiler.length === 0
-    ? '<div style="color:#aa98d9;font-size:14px;padding:8px 0">Kimse yok</div>'
-    : onlineKisiler.map(n => `<div class="popup-kisi"><span class="online-nokta"></span>${safe(n)}</div>`).join("");
-  gosterflex("onlinePopup");
+  el("popupListe").innerHTML = onlineKisiler.length === 0
+    ? '<div style="color:#2a1e42;padding:8px 0;font-size:14px">Kimse yok</div>'
+    : onlineKisiler.map(n => `<div class="popup-kisi"><span class="online-dot"></span>${safe(n)}</div>`).join("");
+  el("onlinePopup").style.display = "flex";
 }
 function popupKapat() { gizle("onlinePopup"); }
-document.getElementById("onlinePopup").addEventListener("click", function(e) {
-  if (e.target === this) popupKapat();
-});
+el("onlinePopup").addEventListener("click", e => { if (e.target === el("onlinePopup")) popupKapat(); });
 
-// YÖNETİCİ PANEL
-function panelToggle() {
-  const p = document.getElementById("yoneticiPanel");
-  p.style.display = (p.style.display === "none" || p.style.display === "") ? "block" : "none";
+// BİLDİRİM
+function bildirimOdaKey() { return "bil_" + (aktifOda ? aktifOda.id : ""); }
+async function bildirimToggle() {
+  if (!("Notification" in window)) { alert("Tarayıcın bildirimleri desteklemiyor."); return; }
+  if (bildirimAcik) {
+    bildirimAcik = false; localStorage.removeItem(bildirimOdaKey());
+  } else {
+    const izin = await Notification.requestPermission();
+    if (izin === "granted") { bildirimAcik = true; localStorage.setItem(bildirimOdaKey(), "1"); }
+    else { alert("Bildirim izni verilmedi. Tarayıcı ayarlarından izin ver."); return; }
+  }
+  bildirimGuncelle();
+}
+function bildirimGuncelle() {
+  if (bildirimAcik) { el("bildirimBadge").classList.add("aktif"); el("bildirimYazi").textContent = "Açık"; }
+  else { el("bildirimBadge").classList.remove("aktif"); el("bildirimYazi").textContent = "Bildirim"; }
+}
+function bildirimDurumYukle() {
+  bildirimAcik = localStorage.getItem(bildirimOdaKey()) === "1" && Notification.permission === "granted";
+  bildirimGuncelle();
+}
+function bildirimGonder(isim, mesaj) {
+  if (!bildirimAcik || document.visibilityState === "visible") return;
+  new Notification("MukoCan Chat — #" + aktifOda.name, { body: isim + ": " + mesaj, icon: "/favicon.ico" });
 }
 
 // ODA LİSTESİ
@@ -293,135 +347,76 @@ async function odalariYukle() {
   odalariGoster(tumOdalar);
 }
 function odalariGoster(odalar) {
-  const liste = document.getElementById("odaListesi");
-  if (!odalar || odalar.length === 0) { liste.innerHTML = '<div class="oda-bos">Oda bulunamadı.</div>'; return; }
+  const liste = el("odaListesi");
+  if (!odalar.length) { liste.innerHTML = '<div class="oda-bos">Henüz oda yok</div>'; return; }
   liste.innerHTML = "";
-  odalar.forEach(oda => {
+  odalar.forEach(o => {
     const div = document.createElement("div");
     div.className = "oda-item";
-    const etiketler = [];
-    if (oda.password) etiketler.push("🔒 Şifreli"); else etiketler.push("🔓 Açık");
-    if (oda.max_users) etiketler.push(`👥 Maks ${oda.max_users}`);
-    if (oda.duyuru_modu) etiketler.push("📢 Duyuru");
-    div.innerHTML = `<div><div class="oda-adi">${safe(oda.name)}</div><div class="oda-info">${etiketler.map(e => `<span>${e}</span>`).join("")}</div></div><div style="font-size:20px">${oda.password ? "🔑" : "➡️"}</div>`;
-    div.onclick = () => odayaTikla(oda);
+    const etiketler = [o.password ? "🔒 Şifreli" : "🔓 Açık"];
+    if (o.max_users) etiketler.push(`👥 ${o.max_users}`);
+    if (o.duyuru_modu) etiketler.push("📢");
+    div.innerHTML = `<div><div class="oda-adi">${safe(o.name)}</div><div class="oda-etiketler">${etiketler.map(e=>`<span class="etiket">${e}</span>`).join("")}</div></div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a1e42" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+    div.onclick = () => odayaTikla(o);
     liste.appendChild(div);
   });
 }
 function odalariFiltrele() {
-  const q = document.getElementById("odaArama").value.toLowerCase();
+  const q = el("odaAra").value.toLowerCase();
   odalariGoster(tumOdalar.filter(o => o.name.toLowerCase().includes(q)));
 }
 
-// ODA GİRİŞ
+// GİRİŞ
 function odayaTikla(oda) {
   aktifOda = oda;
   if (oda.password) {
-    document.getElementById("sifreOdaAdi").textContent = "# " + oda.name;
-    document.getElementById("sifreGir").value = "";
-    document.getElementById("sifreIsim").value = "";
-    hataGizle("sifreErr");
-    gizle("anaSayfa"); goster("sifreSayfasi");
+    el("sifreBaslik").textContent = oda.name;
+    el("sifreGir").value = ""; el("sifreIsim").value = "";
+    hataGizle("sifreErr"); gizle("anaSayfa"); goster("sifreSayfasi");
   } else {
-    document.getElementById("isimOdaAdi").textContent = "# " + oda.name;
-    document.getElementById("isimGir").value = "";
-    hataGizle("isimErr");
-    gizle("anaSayfa"); goster("isimSayfasi");
+    el("isimBaslik").textContent = oda.name;
+    el("isimGir").value = "";
+    hataGizle("isimErr"); gizle("anaSayfa"); goster("isimSayfasi");
   }
 }
-
 async function sifreDogrula() {
-  const sifre = document.getElementById("sifreGir").value.trim();
-  const isim = document.getElementById("sifreIsim").value.trim();
-  if (!isim) { hata("sifreErr", "Takma isim gir!"); return; }
-  if (sifre !== aktifOda.password) { hata("sifreErr", "Şifre yanlış!"); return; }
-  const limitHata = await limitKontrol(aktifOda);
-  if (limitHata) { hata("sifreErr", limitHata); return; }
-  aktifIsim = isim; sohbeteGir();
+  const s = el("sifreGir").value.trim(), i = el("sifreIsim").value.trim();
+  if (!i) { hata("sifreErr", "Takma isim gir!"); return; }
+  if (s !== aktifOda.password) { hata("sifreErr", "Şifre yanlış!"); return; }
+  const lh = await limitKontrol(); if (lh) { hata("sifreErr", lh); return; }
+  aktifIsim = i; sohbeteGir();
 }
-
 async function isimleGir() {
-  const isim = document.getElementById("isimGir").value.trim();
-  if (!isim) { hata("isimErr", "Takma isim gir!"); return; }
-  const limitHata = await limitKontrol(aktifOda);
-  if (limitHata) { hata("isimErr", limitHata); return; }
-  aktifIsim = isim; sohbeteGir();
+  const i = el("isimGir").value.trim();
+  if (!i) { hata("isimErr", "Takma isim gir!"); return; }
+  const lh = await limitKontrol(); if (lh) { hata("isimErr", lh); return; }
+  aktifIsim = i; sohbeteGir();
 }
-
-async function limitKontrol(oda) {
-  if (!oda.max_users) return null;
+async function limitKontrol() {
+  if (!aktifOda.max_users) return null;
   const sinir = new Date(Date.now() - 30000).toISOString();
-  const { data } = await sb.from("presence").select("id").eq("room_id", oda.id).gte("last_seen", sinir);
-  const sayi = (data || []).length;
-  if (sayi >= oda.max_users) return `Bu oda dolu! (${sayi}/${oda.max_users} kişi)`;
-  return null;
+  const { data } = await sb.from("presence").select("id").eq("room_id", aktifOda.id).gte("last_seen", sinir);
+  const s = (data||[]).length;
+  return s >= aktifOda.max_users ? `Oda dolu! (${s}/${aktifOda.max_users})` : null;
 }
 
 async function sohbeteGir() {
-  yoneticiMi = false;
-  gizle("sifreSayfasi"); gizle("isimSayfasi");
-  goster("chatSayfasi");
-  document.getElementById("chatOdaAdi").textContent = "# " + aktifOda.name;
-  document.getElementById("chatIsimGoster").textContent = aktifIsim;
-  document.getElementById("mesajlar").innerHTML = "";
+  yoneticiMi = false; sonMesajId = null;
+  gizle("sifreSayfasi"); gizle("isimSayfasi"); goster("chatSayfasi");
+  el("chatBaslik").textContent = aktifOda.name;
+  el("chatIsimGoster").textContent = aktifIsim;
+  el("mesajlar").innerHTML = "";
   gizle("yoneticiPanel");
-  document.getElementById("yoneticiGiris").style.display = "block";
-  document.getElementById("yoneticiOnaylandi").style.display = "none";
-  document.getElementById("yoneticiKeyGir").value = "";
-  hataGizle("yoneticiErr");
-  alintiTemizle();
-  sonMesajId = null;
-  duyuruDurumGuncelle();
-  bildirimDurumYukle();
-  durum("Yükleniyor...");
+  el("yGiris").style.display = "block"; el("yOnaylandi").style.display = "none";
+  el("yKey").value = ""; hataGizle("yErr");
+  alintiTemizle(); bildirimDurumYukle(); duyuruGuncelle();
+  el("durumDot").className = "durum-dot";
   await presenceGir();
   await mesajlariYukle();
   await onlineGuncelle();
-  timer = setInterval(async () => {
-    await mesajlariYukle();
-    await onlineGuncelle();
-    await odaDurumGuncelle();
-  }, 3000);
-  presenceTimer = setInterval(presenceYenile, 10000);
-  document.getElementById("mesajIn").focus();
-}
-
-// DUYURU MODU
-function duyuruDurumGuncelle() {
-  const duyuruAcik = aktifOda.duyuru_modu;
-  if (duyuruAcik) {
-    goster("duyuruBanner");
-    if (!yoneticiMi) {
-      gizle("mesajRow");
-      goster("duyuruKilitBilgi");
-    } else {
-      goster("mesajRow");
-      gizle("duyuruKilitBilgi");
-    }
-    if (document.getElementById("duyuruToggleBtn"))
-      document.getElementById("duyuruToggleBtn").textContent = "📢 Duyuru Modunu Kapat";
-  } else {
-    gizle("duyuruBanner");
-    goster("mesajRow");
-    gizle("duyuruKilitBilgi");
-    if (document.getElementById("duyuruToggleBtn"))
-      document.getElementById("duyuruToggleBtn").textContent = "📢 Duyuru Modunu Aç";
-  }
-}
-
-async function odaDurumGuncelle() {
-  const { data } = await sb.from("rooms").select("duyuru_modu").eq("id", aktifOda.id).single();
-  if (data && data.duyuru_modu !== aktifOda.duyuru_modu) {
-    aktifOda.duyuru_modu = data.duyuru_modu;
-    duyuruDurumGuncelle();
-  }
-}
-
-async function duyuruToggle() {
-  const yeni = !aktifOda.duyuru_modu;
-  await sb.from("rooms").update({ duyuru_modu: yeni }).eq("id", aktifOda.id);
-  aktifOda.duyuru_modu = yeni;
-  duyuruDurumGuncelle();
+  timer = setInterval(async () => { await mesajlariYukle(); await onlineGuncelle(); await odaDurumGuncelle(); }, 3000);
+  presTimer = setInterval(presenceYenile, 10000);
+  el("mesajIn").focus();
 }
 
 // PRESENCE
@@ -440,201 +435,90 @@ async function presenceCik() {
 async function onlineGuncelle() {
   const sinir = new Date(Date.now() - 30000).toISOString();
   const { data } = await sb.from("presence").select("name").eq("room_id", aktifOda.id).gte("last_seen", sinir);
-  onlineKisiler = (data || []).map(p => p.name);
+  onlineKisiler = (data||[]).map(p => p.name);
   const max = aktifOda.max_users ? `/${aktifOda.max_users}` : "";
-  document.getElementById("onlineOzet").textContent = onlineKisiler.length + max + " çevrimiçi";
-}
-
-// BİLDİRİM (FCM)
-let bildirimAcik = false;
-let sonMesajId = null;
-let fcmMessaging = null;
-
-const VAPID_KEY = "BLShDVERGNKH8B_wRlGjoi1VhHW5027snVD7Gri0Wheqy6OoO4JuYoerkMQjzuXq_7AmAa6xTkzVO3fHaFTc_GY";
-
-async function fcmBaslat() {
-  try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js");
-    const { getMessaging, getToken, onMessage } = await import("https://www.gstatic.com/firebasejs/12.10.0/firebase-messaging.js");
-    const firebaseApp = initializeApp({
-      apiKey: "AIzaSyCQ8EoCKdkTbRtLolmyEzE8XXlIMBVSN9M",
-      authDomain: "mukocanchat.firebaseapp.com",
-      projectId: "mukocanchat",
-      storageBucket: "mukocanchat.firebasestorage.app",
-      messagingSenderId: "17850418068",
-      appId: "1:17850418068:web:0852341553c821de0a8581"
-    });
-    fcmMessaging = getMessaging(firebaseApp);
-
-    // Service worker kaydet
-    const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
-
-    const token = await getToken(fcmMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-    if (token) {
-      localStorage.setItem("fcm_token", token);
-      // Token'ı Supabase'e kaydet (hangi odaları dinlediğini de)
-      await fcmTokenKaydet(token);
-    }
-
-    // Uygulama açıkken gelen mesajlar
-    onMessage(fcmMessaging, (payload) => {
-      if (document.visibilityState !== "visible") return;
-      const title = payload.notification?.title || "MukoCan Chat";
-      const body = payload.notification?.body || "";
-      new Notification(title, { body, icon: "/favicon.ico" });
-    });
-
-    return true;
-  } catch(e) {
-    console.error("FCM hata:", e);
-    return false;
-  }
-}
-
-async function fcmTokenKaydet(token) {
-  // fcm_tokens tablosuna kaydet
-  await sb.from("fcm_tokens").upsert([{ token, updated_at: new Date().toISOString() }], { onConflict: "token" });
-}
-
-async function fcmOdaAbonelik(token, odaId, aktif) {
-  if (aktif) {
-    await sb.from("fcm_subscriptions").upsert([{ token, room_id: odaId }], { onConflict: "token,room_id" });
-  } else {
-    await sb.from("fcm_subscriptions").delete().eq("token", token).eq("room_id", odaId);
-  }
-}
-
-function bildirimOdaKey() { return "bildirim_" + (aktifOda ? aktifOda.id : ""); }
-
-async function bildirimToggle() {
-  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-    alert("Tarayıcın bildirimleri desteklemiyor."); return;
-  }
-  if (bildirimAcik) {
-    bildirimAcik = false;
-    localStorage.removeItem(bildirimOdaKey());
-    const token = localStorage.getItem("fcm_token");
-    if (token && aktifOda) await fcmOdaAbonelik(token, aktifOda.id, false);
-    bildirimBtnGuncelle();
-  } else {
-    const izin = await Notification.requestPermission();
-    if (izin !== "granted") { alert("Bildirim izni verilmedi."); return; }
-    const basarili = await fcmBaslat();
-    if (basarili) {
-      bildirimAcik = true;
-      localStorage.setItem(bildirimOdaKey(), "1");
-      const token = localStorage.getItem("fcm_token");
-      if (token && aktifOda) await fcmOdaAbonelik(token, aktifOda.id, true);
-      bildirimBtnGuncelle();
-    }
-  }
-}
-
-function bildirimBtnGuncelle() {
-  const btn = document.getElementById("bildirimBtn");
-  const yazi = document.getElementById("bildirimBtnYazi");
-  if (bildirimAcik) {
-    yazi.textContent = "Bildirim Açık";
-    btn.style.color = "#7dffbc";
-    btn.style.borderColor = "#7dffbc";
-  } else {
-    yazi.textContent = "Bildirimleri Aç";
-    btn.style.color = "#aa98d9";
-    btn.style.borderColor = "#2a1f4a";
-  }
-}
-
-function bildirimDurumYukle() {
-  bildirimAcik = localStorage.getItem(bildirimOdaKey()) === "1" && Notification.permission === "granted";
-  bildirimBtnGuncelle();
-  if (bildirimAcik) {
-    // FCM'i arka planda da başlat
-    fcmBaslat();
-  }
-}
-
-function bildirimGonder(isim, mesaj, odaAdi) {
-  if (!bildirimAcik || document.visibilityState === "visible") return;
-  new Notification("MukoCan Chat — #" + odaAdi, {
-    body: isim + ": " + mesaj,
-    icon: "/favicon.ico"
-  });
+  el("onlineSayi").textContent = onlineKisiler.length + max;
 }
 
 // MESAJLAR
 async function mesajlariYukle() {
   const { data, error } = await sb.from("messages").select("*").eq("room", aktifOda.id).order("created_at", {ascending: true});
-  if (error) { durum("Hata!"); return; }
-  const box = document.getElementById("mesajlar");
+  if (error) { el("durumDot").className = "durum-dot"; el("durumDot").style.background = "#f87171"; return; }
+  const box = el("mesajlar");
   const mevcutlar = Array.from(box.querySelectorAll(".msg")).map(e => e.dataset.id);
-  (data || []).forEach(m => {
+  const scrollBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+  (data||[]).forEach(m => {
     if (!mevcutlar.includes(String(m.id))) {
       const div = document.createElement("div");
-      div.className = "msg" + (m.name === aktifIsim ? " benim" : "");
-      div.dataset.id = m.id;
-      div.dataset.isim = m.name;
-      div.dataset.mesaj = m.message;
+      div.className = "msg " + (m.name === aktifIsim ? "benim" : "diger");
+      div.dataset.id = m.id; div.dataset.isim = m.name; div.dataset.mesaj = m.message;
       const saat = new Date(m.created_at).toLocaleTimeString("tr-TR", {hour:"2-digit",minute:"2-digit"});
-      const alintiBlok = m.reply_to ? `<div class="alinti-blok">↩️ ${safe(m.reply_to)}</div>` : "";
-      div.innerHTML = `<div class="isim">${safe(m.name)} <span class="saat">${saat}</span><span class="alinti-btn" onclick="alintiYap(this)">↩️</span></div>${alintiBlok}<div class="icerik">${safe(m.message)}</div>`;
+      const alintiBlok = m.reply_to ? `<div class="alinti-blok">↩ ${safe(m.reply_to)}</div>` : "";
+      div.innerHTML = `<div class="msg-isim">${safe(m.name)}</div>${alintiBlok}<div class="msg-icerik">${safe(m.message)}</div><div class="msg-alt"><span class="msg-saat">${saat}</span><span class="alinti-btn" onclick="alintiYap(this)">↩</span></div>`;
       box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-      // Bildirim - kendi mesajımız değilse ve sayfa arka plandaysa
-      if (sonMesajId !== null && m.name !== aktifIsim) {
-        bildirimGonder(m.name, m.message, aktifOda.name);
-      }
+      if (sonMesajId !== null && m.name !== aktifIsim) bildirimGonder(m.name, m.message);
     }
   });
-  // En son mesaj id'sini kaydet
-  if (data && data.length > 0) sonMesajId = data[data.length - 1].id;
+  if (scrollBottom) box.scrollTop = box.scrollHeight;
+  if (data && data.length > 0) sonMesajId = data[data.length-1].id;
   else if (sonMesajId === null) sonMesajId = "bos";
-  durum("✓ Aktif");
+  el("durumDot").className = "durum-dot ok";
 }
 
 // ALINTI
 function alintiYap(btn) {
-  const msg = btn.closest(".msg");
-  alintiMsg = { isim: msg.dataset.isim, metin: msg.dataset.mesaj };
-  document.getElementById("alintiOnizlemeMetin").textContent = alintiMsg.isim + ": " + alintiMsg.metin;
-  gosterflex("alintiOnizleme");
-  document.getElementById("mesajIn").focus();
+  const m = btn.closest(".msg");
+  alintiMsg = { isim: m.dataset.isim, metin: m.dataset.mesaj };
+  el("alintiMetin").textContent = alintiMsg.isim + ": " + alintiMsg.metin;
+  el("alintiOnizleme").style.display = "flex";
+  el("mesajIn").focus();
 }
-function alintiTemizle() {
-  alintiMsg = null;
-  gizle("alintiOnizleme");
-}
+function alintiTemizle() { alintiMsg = null; gizle("alintiOnizleme"); }
 
 // GÖNDER
 async function gonder() {
   if (aktifOda.duyuru_modu && !yoneticiMi) return;
-  const text = document.getElementById("mesajIn").value.trim();
-  if (!text) return;
+  const text = el("mesajIn").value.trim(); if (!text) return;
   hataGizle("chatErr");
-  document.getElementById("gonderBtn").disabled = true;
-  document.getElementById("mesajIn").value = "";
-  const mesajData = { room: aktifOda.id, name: aktifIsim, message: text };
-  if (alintiMsg) mesajData.reply_to = alintiMsg.isim + ": " + alintiMsg.metin.substring(0, 60);
+  el("gonderBtn").disabled = true; el("mesajIn").value = "";
+  const veri = { room: aktifOda.id, name: aktifIsim, message: text };
+  if (alintiMsg) veri.reply_to = alintiMsg.isim + ": " + alintiMsg.metin.substring(0, 60);
   alintiTemizle();
-  const { error } = await sb.from("messages").insert([mesajData]);
-  document.getElementById("gonderBtn").disabled = false;
-  if (error) { document.getElementById("mesajIn").value = text; hata("chatErr", "Gönderilemedi: " + error.message); }
+  const { error } = await sb.from("messages").insert([veri]);
+  el("gonderBtn").disabled = false;
+  if (error) { el("mesajIn").value = text; hata("chatErr", "Gönderilemedi!"); }
   else await mesajlariYukle();
-  document.getElementById("mesajIn").focus();
+  el("mesajIn").focus();
+}
+
+// DUYURU
+function duyuruGuncelle() {
+  const ac = aktifOda.duyuru_modu;
+  el("duyuruBar").style.display = ac ? "block" : "none";
+  if (ac && !yoneticiMi) { gizle("mesajKutu"); goster("kilitliBilgi"); }
+  else { goster("mesajKutu"); gizle("kilitliBilgi"); }
+  el("duyuruBtn").textContent = ac ? "📢 Duyuru Modunu Kapat" : "📢 Duyuru Modunu Aç";
+}
+async function odaDurumGuncelle() {
+  const { data } = await sb.from("rooms").select("duyuru_modu").eq("id", aktifOda.id).single();
+  if (data && data.duyuru_modu !== aktifOda.duyuru_modu) { aktifOda.duyuru_modu = data.duyuru_modu; duyuruGuncelle(); }
+}
+async function duyuruToggle() {
+  const yeni = !aktifOda.duyuru_modu;
+  await sb.from("rooms").update({ duyuru_modu: yeni }).eq("id", aktifOda.id);
+  aktifOda.duyuru_modu = yeni; duyuruGuncelle();
 }
 
 // YÖNETİCİ
+function panelToggle() { const p = el("yoneticiPanel"); p.style.display = p.style.display === "block" ? "none" : "block"; }
 async function yoneticiDogrula() {
-  const key = document.getElementById("yoneticiKeyGir").value.trim();
-  if (!key) return;
+  const key = el("yKey").value.trim(); if (!key) return;
   const { data } = await sb.from("rooms").select("owner_key").eq("id", aktifOda.id).single();
   if (data && data.owner_key === key) {
     yoneticiMi = true;
-    document.getElementById("yoneticiGiris").style.display = "none";
-    document.getElementById("yoneticiOnaylandi").style.display = "block";
-    duyuruDurumGuncelle();
-  } else { hata("yoneticiErr", "Yanlış anahtar!"); }
+    el("yGiris").style.display = "none"; el("yOnaylandi").style.display = "block"; duyuruGuncelle();
+  } else hata("yErr", "Yanlış anahtar!");
 }
-
 async function odaSil() {
   if (!confirm("Odayı silmek istediğine emin misin?")) return;
   await sb.from("presence").delete().eq("room_id", aktifOda.id);
@@ -644,57 +528,43 @@ async function odaSil() {
 }
 
 // YENİ ODA
-function yeniOdaGoster() { goster("yeniOdaForm"); }
+function yeniOdaGoster() { goster("yeniOdaForm"); el("yeniAd").focus(); }
 function yeniOdaGizle() { gizle("yeniOdaForm"); }
-
 async function odaOlustur() {
-  const ad = document.getElementById("yeniAd").value.trim();
-  const sifre = document.getElementById("yeniSifre").value.trim();
-  const yKey = document.getElementById("yeniYoneticiKey").value.trim();
-  const isim = document.getElementById("yeniIsim").value.trim();
-  const maxU = document.getElementById("yeniMaxUser").value;
+  const ad = el("yeniAd").value.trim(), sifre = el("yeniSifre").value.trim();
+  const yKey = el("yeniYKey").value.trim(), isim = el("yeniIsim").value.trim();
+  const maxU = el("yeniMax").value;
   if (!ad || !isim) { hata("yeniErr", "Oda adı ve takma isim zorunlu!"); return; }
   if (!yKey) { hata("yeniErr", "Yönetici anahtarı belirle!"); return; }
   hataGizle("yeniErr");
-  const { data, error } = await sb.from("rooms").insert([{
-    name: ad, password: sifre || null, owner_key: yKey,
-    max_users: maxU ? parseInt(maxU) : 50,
-    duyuru_modu: false
-  }]).select().single();
+  const { data, error } = await sb.from("rooms").insert([{ name: ad, password: sifre||null, owner_key: yKey, max_users: maxU ? parseInt(maxU) : 50, duyuru_modu: false }]).select().single();
   if (error) { hata("yeniErr", "Hata: " + error.message); return; }
   aktifOda = data; aktifIsim = isim;
   yeniOdaGizle(); gizle("anaSayfa");
   await sohbeteGir();
-  yoneticiMi = true;
-  goster("yoneticiPanel");
-  document.getElementById("yoneticiGiris").style.display = "none";
-  document.getElementById("yoneticiOnaylandi").style.display = "block";
-  duyuruDurumGuncelle();
+  yoneticiMi = true; goster("yoneticiPanel");
+  el("yGiris").style.display = "none"; el("yOnaylandi").style.display = "block"; duyuruGuncelle();
 }
 
 // ÇIKIŞ
 async function cik() {
-  clearInterval(timer); clearInterval(presenceTimer);
-  timer = null; presenceTimer = null;
+  clearInterval(timer); clearInterval(presTimer); timer = null; presTimer = null;
   await presenceCik();
   aktifOda = null; aktifIsim = ""; yoneticiMi = false;
-  document.getElementById("mesajlar").innerHTML = "";
+  el("mesajlar").innerHTML = "";
   gizle("chatSayfasi"); gizle("onlinePopup");
   goster("anaSayfa"); odalariYukle();
 }
 function anaSayfayaDon() { gizle("sifreSayfasi"); gizle("isimSayfasi"); goster("anaSayfa"); }
 
-window.addEventListener("beforeunload", () => {
-  if (presenceId) sb.from("presence").delete().eq("id", presenceId);
-});
-
+window.addEventListener("beforeunload", () => { if (presenceId) sb.from("presence").delete().eq("id", presenceId); });
 document.addEventListener("keydown", e => {
   if (e.key === "Escape") popupKapat();
   if (e.key !== "Enter") return;
-  if (document.getElementById("chatSayfasi").style.display !== "none") gonder();
-  else if (document.getElementById("sifreSayfasi").style.display !== "none") sifreDogrula();
-  else if (document.getElementById("isimSayfasi").style.display !== "none") isimleGir();
-  else if (document.getElementById("yeniOdaForm").style.display !== "none") odaOlustur();
+  if (el("chatSayfasi").style.display !== "none") gonder();
+  else if (el("sifreSayfasi").style.display !== "none") sifreDogrula();
+  else if (el("isimSayfasi").style.display !== "none") isimleGir();
+  else if (el("yeniOdaForm").style.display !== "none") odaOlustur();
 });
 
 odalariYukle();
