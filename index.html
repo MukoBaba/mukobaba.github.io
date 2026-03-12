@@ -170,9 +170,14 @@
         </div>
       </div>
       <div class="status" id="durumYazi">Bağlanıyor...</div>
-      <div class="online-ozet" onclick="popupAc()">
-        <span class="online-nokta"></span>
-        <span id="onlineOzet">0 çevrimiçi</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <div class="online-ozet" onclick="popupAc()">
+          <span class="online-nokta"></span>
+          <span id="onlineOzet">0 çevrimiçi</span>
+        </div>
+        <div id="bildirimBtn" onclick="bildirimToggle()" style="display:inline-flex;align-items:center;gap:5px;background:#0d0820;border:1px solid #2a1f4a;border-radius:20px;padding:5px 12px;cursor:pointer;font-size:13px;color:#aa98d9;">
+          🔔 <span id="bildirimBtnYazi">Bildirimleri Aç</span>
+        </div>
       </div>
 
       <!-- DUYURU BANNER -->
@@ -365,7 +370,9 @@ async function sohbeteGir() {
   document.getElementById("yoneticiKeyGir").value = "";
   hataGizle("yoneticiErr");
   alintiTemizle();
+  sonMesajId = null;
   duyuruDurumGuncelle();
+  bildirimDurumYukle();
   durum("Yükleniyor...");
   await presenceGir();
   await mesajlariYukle();
@@ -438,6 +445,122 @@ async function onlineGuncelle() {
   document.getElementById("onlineOzet").textContent = onlineKisiler.length + max + " çevrimiçi";
 }
 
+// BİLDİRİM (FCM)
+let bildirimAcik = false;
+let sonMesajId = null;
+let fcmMessaging = null;
+
+const VAPID_KEY = "BLShDVERGNKH8B_wRlGjoi1VhHW5027snVD7Gri0Wheqy6OoO4JuYoerkMQjzuXq_7AmAa6xTkzVO3fHaFTc_GY";
+
+async function fcmBaslat() {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js");
+    const { getMessaging, getToken, onMessage } = await import("https://www.gstatic.com/firebasejs/12.10.0/firebase-messaging.js");
+    const firebaseApp = initializeApp({
+      apiKey: "AIzaSyCQ8EoCKdkTbRtLolmyEzE8XXlIMBVSN9M",
+      authDomain: "mukocanchat.firebaseapp.com",
+      projectId: "mukocanchat",
+      storageBucket: "mukocanchat.firebasestorage.app",
+      messagingSenderId: "17850418068",
+      appId: "1:17850418068:web:0852341553c821de0a8581"
+    });
+    fcmMessaging = getMessaging(firebaseApp);
+
+    // Service worker kaydet
+    const reg = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+
+    const token = await getToken(fcmMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+    if (token) {
+      localStorage.setItem("fcm_token", token);
+      // Token'ı Supabase'e kaydet (hangi odaları dinlediğini de)
+      await fcmTokenKaydet(token);
+    }
+
+    // Uygulama açıkken gelen mesajlar
+    onMessage(fcmMessaging, (payload) => {
+      if (document.visibilityState !== "visible") return;
+      const title = payload.notification?.title || "MukoCan Chat";
+      const body = payload.notification?.body || "";
+      new Notification(title, { body, icon: "/favicon.ico" });
+    });
+
+    return true;
+  } catch(e) {
+    console.error("FCM hata:", e);
+    return false;
+  }
+}
+
+async function fcmTokenKaydet(token) {
+  // fcm_tokens tablosuna kaydet
+  await sb.from("fcm_tokens").upsert([{ token, updated_at: new Date().toISOString() }], { onConflict: "token" });
+}
+
+async function fcmOdaAbonelik(token, odaId, aktif) {
+  if (aktif) {
+    await sb.from("fcm_subscriptions").upsert([{ token, room_id: odaId }], { onConflict: "token,room_id" });
+  } else {
+    await sb.from("fcm_subscriptions").delete().eq("token", token).eq("room_id", odaId);
+  }
+}
+
+function bildirimOdaKey() { return "bildirim_" + (aktifOda ? aktifOda.id : ""); }
+
+async function bildirimToggle() {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    alert("Tarayıcın bildirimleri desteklemiyor."); return;
+  }
+  if (bildirimAcik) {
+    bildirimAcik = false;
+    localStorage.removeItem(bildirimOdaKey());
+    const token = localStorage.getItem("fcm_token");
+    if (token && aktifOda) await fcmOdaAbonelik(token, aktifOda.id, false);
+    bildirimBtnGuncelle();
+  } else {
+    const izin = await Notification.requestPermission();
+    if (izin !== "granted") { alert("Bildirim izni verilmedi."); return; }
+    const basarili = await fcmBaslat();
+    if (basarili) {
+      bildirimAcik = true;
+      localStorage.setItem(bildirimOdaKey(), "1");
+      const token = localStorage.getItem("fcm_token");
+      if (token && aktifOda) await fcmOdaAbonelik(token, aktifOda.id, true);
+      bildirimBtnGuncelle();
+    }
+  }
+}
+
+function bildirimBtnGuncelle() {
+  const btn = document.getElementById("bildirimBtn");
+  const yazi = document.getElementById("bildirimBtnYazi");
+  if (bildirimAcik) {
+    yazi.textContent = "Bildirim Açık";
+    btn.style.color = "#7dffbc";
+    btn.style.borderColor = "#7dffbc";
+  } else {
+    yazi.textContent = "Bildirimleri Aç";
+    btn.style.color = "#aa98d9";
+    btn.style.borderColor = "#2a1f4a";
+  }
+}
+
+function bildirimDurumYukle() {
+  bildirimAcik = localStorage.getItem(bildirimOdaKey()) === "1" && Notification.permission === "granted";
+  bildirimBtnGuncelle();
+  if (bildirimAcik) {
+    // FCM'i arka planda da başlat
+    fcmBaslat();
+  }
+}
+
+function bildirimGonder(isim, mesaj, odaAdi) {
+  if (!bildirimAcik || document.visibilityState === "visible") return;
+  new Notification("MukoCan Chat — #" + odaAdi, {
+    body: isim + ": " + mesaj,
+    icon: "/favicon.ico"
+  });
+}
+
 // MESAJLAR
 async function mesajlariYukle() {
   const { data, error } = await sb.from("messages").select("*").eq("room", aktifOda.id).order("created_at", {ascending: true});
@@ -456,8 +579,15 @@ async function mesajlariYukle() {
       div.innerHTML = `<div class="isim">${safe(m.name)} <span class="saat">${saat}</span><span class="alinti-btn" onclick="alintiYap(this)">↩️</span></div>${alintiBlok}<div class="icerik">${safe(m.message)}</div>`;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
+      // Bildirim - kendi mesajımız değilse ve sayfa arka plandaysa
+      if (sonMesajId !== null && m.name !== aktifIsim) {
+        bildirimGonder(m.name, m.message, aktifOda.name);
+      }
     }
   });
+  // En son mesaj id'sini kaydet
+  if (data && data.length > 0) sonMesajId = data[data.length - 1].id;
+  else if (sonMesajId === null) sonMesajId = "bos";
   durum("✓ Aktif");
 }
 
