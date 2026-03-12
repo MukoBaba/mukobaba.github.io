@@ -28,9 +28,9 @@
     .oda-bos { color: #aa98d9; font-size: 14px; text-align: center; padding: 20px; }
     .yeni-btn { background: #1f0d3d; border: 1px dashed #53308b; border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; color: #aa98d9; font-size: 14px; margin-bottom: 16px; }
     .yeni-btn:hover { border-color: #8c52ff; color: #fff; }
-    .chat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .chat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
     .chat-header h2 { color: #ffd54a; font-size: 18px; }
-    .chat-box { height: 360px; overflow-y: auto; background: #120824; border: 1px solid #53308b; border-radius: 10px; padding: 10px; margin: 10px 0; }
+    .chat-box { height: 320px; overflow-y: auto; background: #120824; border: 1px solid #53308b; border-radius: 10px; padding: 10px; margin: 8px 0; }
     .msg { background: #241046; border-left: 3px solid #8c52ff; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
     .msg.benim { border-left-color: #ffd54a; background: #1f1000; }
     .isim { color: #ffd54a; font-size: 12px; font-weight: bold; }
@@ -42,6 +42,12 @@
     .row button { width: auto; padding: 12px 18px; margin-top: 0; flex-shrink: 0; }
     .yonetici-kutu { background: rgba(255,200,0,0.07); border: 1px solid #7a5c00; border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: #ffd54a; }
     .label { font-size: 12px; color: #aa98d9; margin-top: 12px; margin-bottom: -6px; display: block; }
+
+    /* ÇEVRİMİÇİ LİSTESİ */
+    .online-bar { background: #0d0820; border: 1px solid #2a1f4a; border-radius: 10px; padding: 8px 12px; margin: 6px 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .online-baslik { font-size: 12px; color: #7dffbc; font-weight: bold; flex-shrink: 0; }
+    .online-kisi { display: inline-flex; align-items: center; gap: 4px; background: #1a0b33; border-radius: 20px; padding: 3px 10px; font-size: 12px; color: #fff; }
+    .online-nokta { width: 7px; height: 7px; border-radius: 50%; background: #7dffbc; box-shadow: 0 0 5px #7dffbc; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -109,6 +115,13 @@
         </div>
       </div>
       <div class="status" id="durumYazi">Bağlanıyor...</div>
+
+      <!-- ÇEVRİMİÇİ BAR -->
+      <div class="online-bar">
+        <span class="online-baslik">🟢 Çevrimiçi:</span>
+        <div id="onlineListesi" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+      </div>
+
       <div class="chat-box" id="mesajlar"></div>
       <div id="chatErr" class="error hidden"></div>
       <div class="row">
@@ -116,16 +129,13 @@
         <button onclick="gonder()" id="gonderBtn" style="width:auto;padding:12px 18px;margin-top:0">Gönder</button>
       </div>
 
-      <!-- YÖNETİCİ PANELİ -->
       <div id="yoneticiPanel" class="yonetici-kutu hidden">
         ⭐ Sen bu odanın yöneticisisin
         <button class="btn-red" style="margin-top:8px;font-size:13px;padding:10px" onclick="odaSil()">🗑️ Odayı Sil</button>
       </div>
-
-      <!-- YÖNETİCİ GİRİŞİ -->
       <div id="yoneticiGiris" style="margin-top:10px">
         <div style="display:flex;gap:8px">
-          <input id="yoneticiKeyGir" type="password" placeholder="Yönetici anahtarı gir" style="margin-top:0;font-size:13px" />
+          <input id="yoneticiKeyGir" type="password" placeholder="Yönetici anahtarı" style="margin-top:0;font-size:13px" />
           <button onclick="yoneticiDogrula()" style="width:auto;padding:10px 14px;margin-top:0;font-size:13px;background:#3d1a7a">Doğrula</button>
         </div>
         <div id="yoneticiErr" class="error hidden"></div>
@@ -141,7 +151,7 @@ const URL_ = "https://zxlbfzfccbdciqdmqmsy.supabase.co";
 const KEY_ = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp4bGJmemZjY2JkY2lxZG1xbXN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyNTg4NDUsImV4cCI6MjA4ODgzNDg0NX0.4QmR0PGik--bMaSL7LugNAgxZsyzgFOiuXxh8B8V9FM";
 const sb = window.supabase.createClient(URL_, KEY_);
 
-let aktifOda = null, aktifIsim = "", timer = null, yoneticiMi = false;
+let aktifOda = null, aktifIsim = "", timer = null, presenceTimer = null, presenceId = null, yoneticiMi = false;
 
 function safe(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
 function goster(id) { document.getElementById(id).classList.remove("hidden"); }
@@ -174,14 +184,12 @@ function odayaTikla(oda) {
     document.getElementById("sifreGir").value = "";
     document.getElementById("sifreIsim").value = "";
     hataGizle("sifreErr");
-    gizle("anaSayfa");
-    goster("sifreSayfasi");
+    gizle("anaSayfa"); goster("sifreSayfasi");
   } else {
     document.getElementById("isimOdaAdi").textContent = "# " + oda.name;
     document.getElementById("isimGir").value = "";
     hataGizle("isimErr");
-    gizle("anaSayfa");
-    goster("isimSayfasi");
+    gizle("anaSayfa"); goster("isimSayfasi");
   }
 }
 
@@ -190,15 +198,13 @@ function sifreDogrula() {
   const isim = document.getElementById("sifreIsim").value.trim();
   if (!isim) { hata("sifreErr", "Takma isim gir!"); return; }
   if (sifre !== aktifOda.password) { hata("sifreErr", "Şifre yanlış!"); return; }
-  aktifIsim = isim;
-  sohbeteGir();
+  aktifIsim = isim; sohbeteGir();
 }
 
 function isimleGir() {
   const isim = document.getElementById("isimGir").value.trim();
   if (!isim) { hata("isimErr", "Takma isim gir!"); return; }
-  aktifIsim = isim;
-  sohbeteGir();
+  aktifIsim = isim; sohbeteGir();
 }
 
 async function sohbeteGir() {
@@ -208,16 +214,58 @@ async function sohbeteGir() {
   document.getElementById("chatOdaAdi").textContent = "# " + aktifOda.name;
   document.getElementById("chatIsimGoster").textContent = aktifIsim;
   document.getElementById("mesajlar").innerHTML = "";
-  gizle("yoneticiPanel");
-  goster("yoneticiGiris");
+  gizle("yoneticiPanel"); goster("yoneticiGiris");
   hataGizle("yoneticiErr");
   document.getElementById("yoneticiKeyGir").value = "";
   durum("Yükleniyor...");
+
+  await presenceGir();
   await mesajlariYukle();
-  timer = setInterval(mesajlariYukle, 3000);
+  await onlineGuncelle();
+
+  timer = setInterval(async () => { await mesajlariYukle(); await onlineGuncelle(); }, 3000);
+  presenceTimer = setInterval(presenceYenile, 10000);
   document.getElementById("mesajIn").focus();
 }
 
+// ── PRESENCE ──
+async function presenceGir() {
+  // Eski kaydı temizle
+  if (presenceId) {
+    await sb.from("presence").delete().eq("id", presenceId);
+    presenceId = null;
+  }
+  const { data } = await sb.from("presence").insert([{ room_id: aktifOda.id, name: aktifIsim }]).select().single();
+  if (data) presenceId = data.id;
+}
+
+async function presenceYenile() {
+  if (!presenceId) return;
+  await sb.from("presence").update({ last_seen: new Date().toISOString() }).eq("id", presenceId);
+}
+
+async function presenceCik() {
+  if (presenceId) {
+    await sb.from("presence").delete().eq("id", presenceId);
+    presenceId = null;
+  }
+}
+
+async function onlineGuncelle() {
+  // 30 saniye içinde görünenleri göster
+  const sinir = new Date(Date.now() - 30000).toISOString();
+  const { data } = await sb.from("presence").select("name").eq("room_id", aktifOda.id).gte("last_seen", sinir);
+  const liste = document.getElementById("onlineListesi");
+  liste.innerHTML = "";
+  (data || []).forEach(p => {
+    const span = document.createElement("span");
+    span.className = "online-kisi";
+    span.innerHTML = `<span class="online-nokta"></span>${safe(p.name)}`;
+    liste.appendChild(span);
+  });
+}
+
+// ── MESAJLAR ──
 async function mesajlariYukle() {
   const { data, error } = await sb.from("messages").select("*").eq("room", aktifOda.id).order("created_at", {ascending: true});
   if (error) { durum("Hata!"); return; }
@@ -257,15 +305,15 @@ async function yoneticiDogrula() {
   const { data } = await sb.from("rooms").select("owner_key").eq("id", aktifOda.id).single();
   if (data && data.owner_key === key) {
     yoneticiMi = true;
-    gizle("yoneticiGiris");
-    goster("yoneticiPanel");
+    gizle("yoneticiGiris"); goster("yoneticiPanel");
   } else {
     hata("yoneticiErr", "Yanlış anahtar!");
   }
 }
 
 async function odaSil() {
-  if (!confirm("Odayı silmek istediğine emin misin? Tüm mesajlar silinecek!")) return;
+  if (!confirm("Odayı silmek istediğine emin misin?")) return;
+  await sb.from("presence").delete().eq("room_id", aktifOda.id);
   await sb.from("messages").delete().eq("room", aktifOda.id);
   await sb.from("rooms").delete().eq("id", aktifOda.id);
   cik();
@@ -285,23 +333,21 @@ async function odaOlustur() {
   hataGizle("yeniErr");
   const { data, error } = await sb.from("rooms").insert([{ name: ad, password: sifre || null, owner_key: yKey }]).select().single();
   if (error) { hata("yeniErr", "Hata: " + error.message); return; }
-  aktifOda = data;
-  aktifIsim = isim;
-  yeniOdaGizle();
-  gizle("anaSayfa");
+  aktifOda = data; aktifIsim = isim;
+  yeniOdaGizle(); gizle("anaSayfa");
   await sohbeteGir();
-  // Oda kurucusu otomatik yönetici
   yoneticiMi = true;
-  gizle("yoneticiGiris");
-  goster("yoneticiPanel");
+  gizle("yoneticiGiris"); goster("yoneticiPanel");
 }
 
-function cik() {
-  clearInterval(timer); timer = null;
+// ── ÇIKIŞ ──
+async function cik() {
+  clearInterval(timer); clearInterval(presenceTimer);
+  timer = null; presenceTimer = null;
+  await presenceCik();
   aktifOda = null; aktifIsim = ""; yoneticiMi = false;
   document.getElementById("mesajlar").innerHTML = "";
-  gizle("chatSayfasi");
-  goster("anaSayfa");
+  gizle("chatSayfasi"); goster("anaSayfa");
   odalariYukle();
 }
 
@@ -309,6 +355,11 @@ function anaSayfayaDon() {
   gizle("sifreSayfasi"); gizle("isimSayfasi");
   goster("anaSayfa");
 }
+
+// Sekme/tarayıcı kapanınca presence sil
+window.addEventListener("beforeunload", () => {
+  if (presenceId) sb.from("presence").delete().eq("id", presenceId);
+});
 
 document.addEventListener("keydown", e => {
   if (e.key !== "Enter") return;
