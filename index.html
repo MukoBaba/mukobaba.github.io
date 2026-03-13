@@ -404,6 +404,7 @@
     .msg-icerik { font-size: var(--msg-font-size) !important; }
     #mesajIn { font-size: var(--msg-font-size) !important; }
     .dm-msg { font-size: var(--msg-font-size) !important; }
+    #dmMesajIn { font-size: var(--msg-font-size) !important; }
 
     * { -webkit-tap-highlight-color: transparent; }
     body { touch-action: pan-y; -webkit-overflow-scrolling: touch; user-select: none; }
@@ -567,7 +568,10 @@
 <div id="dmSayfasi" style="display:none;height:100%;overflow-y:auto;">
   <div class="wrap">
     <div class="logo">
-      <div class="logo-title">MukoCan Chat</div>
+      <div style="position:relative">
+        <button onclick="yaziBoyutuAc()" style="position:absolute;left:0;top:0;background:#1e1a32;border:1px solid #2a1e42;border-radius:8px;color:#6d4aa0;font-size:13px;cursor:pointer;padding:4px 8px;line-height:1">⚙️</button>
+        <div class="logo-title">MukoCan Chat</div>
+      </div>
       <div class="logo-sub" style="font-size:12px">Özel Mesajlar</div>
       <div style="margin-top:12px;display:flex;justify-content:center;gap:8px">
         <button class="auth-header-btn" id="authBtn2" onclick="authAc()">👤 Giriş Yap / Kayıt Ol</button>
@@ -770,7 +774,7 @@
   </div>
 </div>
 
-<div class="ver">v14.0</div>
+<div class="ver">v14.3</div>
 
 <!-- DOĞRULAMA KODU -->
 <div class="overlay" id="dogrulamaOverlay" style="display:none">
@@ -1760,12 +1764,40 @@ async function kullaniciAra(){
   const snap=await db.collection("users").where("username",">=",q).where("username","<=",q+"\uf8ff").limit(5).get();
   const data=snap.docs.filter(d=>d.id!==aktifHesap.id);
   if(!data.length){sonuc.innerHTML='<div style="color:#2a1e42;font-size:13px">Kullanıcı bulunamadı</div>';return;}
-  sonuc.innerHTML=data.map(d=>`<div class="arkadas-item"><div class="arkadas-avatar">${d.data().username[0].toUpperCase()}</div><div class="arkadas-ad">${safe(d.data().username)}</div><button class="arkadas-btn-mor" onclick="istekGonder('${d.id}','${safe(d.data().username)}',this)">+ İstek At</button></div>`).join("");
+  // Check existing friendships and pending requests
+  const [s1,s2,p1,p2]=await Promise.all([
+    db.collection("friendRequests").where("fromId","==",aktifHesap.id).where("status","==","kabul").get(),
+    db.collection("friendRequests").where("toId","==",aktifHesap.id).where("status","==","kabul").get(),
+    db.collection("friendRequests").where("fromId","==",aktifHesap.id).where("status","==","bekliyor").get(),
+    db.collection("friendRequests").where("toId","==",aktifHesap.id).where("status","==","bekliyor").get(),
+  ]);
+  const arkadasIds=new Set([...s1.docs.map(d=>d.data().toId),...s2.docs.map(d=>d.data().fromId)]);
+  const bekleyenIds=new Set([...p1.docs.map(d=>d.data().toId),...p2.docs.map(d=>d.data().fromId)]);
+  sonuc.innerHTML=data.map(d=>{
+    const uid=d.id, un=safe(d.data().username);
+    let btn;
+    if(arkadasIds.has(uid)) btn=`<button class="arkadas-btn-yesil" disabled>✓ Arkadaş</button>`;
+    else if(bekleyenIds.has(uid)) btn=`<button class="arkadas-btn-kirmizi" disabled>⏳ Bekliyor</button>`;
+    else btn=`<button class="arkadas-btn-mor" onclick="istekGonder('${uid}','${un}',this)">+ İstek At</button>`;
+    return `<div class="arkadas-item"><div class="arkadas-avatar">${d.data().username[0].toUpperCase()}</div><div class="arkadas-ad">${un}</div>${btn}</div>`;
+  }).join("");
 }
 async function istekGonder(toId,toAd,btn){
-  btn.disabled=true;btn.textContent="Gönderildi";
-  try{await db.collection("friendRequests").add({fromId:aktifHesap.id,toId,fromName:aktifHesap.username,toName:toAd,status:"bekliyor",createdAt:firebase.firestore.FieldValue.serverTimestamp()});}
-  catch(e){btn.disabled=false;btn.textContent="+ İstek At";alert("Hata!");}
+  if(btn){btn.disabled=true;btn.textContent="Gönderiliyor...";}
+  try{
+    const ref=await db.collection("friendRequests").add({fromId:aktifHesap.id,toId,fromName:aktifHesap.username,toName:toAd,status:"bekliyor",createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    if(btn){
+      btn.textContent="✓ Gönderildi";btn.style.background="#0f2e1c";btn.style.color="#34d399";
+      const iptalBtn=document.createElement("button");
+      iptalBtn.className="arkadas-btn-kirmizi";iptalBtn.textContent="İptal";iptalBtn.style.marginLeft="4px";
+      iptalBtn.onclick=async()=>{
+        await db.collection("friendRequests").doc(ref.id).delete();
+        btn.textContent="+ İstek At";btn.disabled=false;btn.style.background="";btn.style.color="";
+        iptalBtn.remove();
+      };
+      btn.after(iptalBtn);
+    }
+  }catch(e){if(btn){btn.disabled=false;btn.textContent="+ İstek At";}alert("Hata!");}
 }
 async function arkadasListeYukle(){
   const div=el("arkadasListeDiv");div.innerHTML='<div style="color:#3d2d5a;font-size:13px">Yükleniyor...</div>';
@@ -1786,9 +1818,12 @@ async function arkadasIstekYukle(){
   div.innerHTML=snap.docs.map(d=>`<div class="arkadas-item"><div class="arkadas-avatar">${(d.data().fromName||"?")[0].toUpperCase()}</div><div class="arkadas-ad">${safe(d.data().fromName||"?")}</div><button class="arkadas-btn-yesil" onclick="istekCevapla('${d.id}','kabul',this)">✓ Kabul</button><button class="arkadas-btn-kirmizi" onclick="istekCevapla('${d.id}','red',this)">✗ Reddet</button></div>`).join("");
 }
 async function istekCevapla(id,durum,btn){
-  btn.closest(".arkadas-item").style.opacity="0.5";
+  const item=btn.closest(".arkadas-item");
+  item.style.opacity="0.5";item.style.transition="opacity 0.3s";
   await db.collection("friendRequests").doc(id).update({status:durum});
-  arkadasListeYukle();arkadasIstekYukle();
+  item.style.height=item.offsetHeight+"px";
+  setTimeout(()=>{item.style.height="0";item.style.overflow="hidden";item.style.padding="0";item.style.margin="0";},50);
+  setTimeout(()=>{item.remove();arkadasListeYukle();arkadasIstekYukle();},350);
 }
 async function dmIstekKontrol(){
   if(!aktifHesap)return;
@@ -1815,7 +1850,21 @@ async function dmKullaniciAra(){
   const snap=await db.collection("users").where("username",">=",q).where("username","<=",q+"\uf8ff").limit(5).get();
   const data=snap.docs.filter(d=>d.id!==aktifHesap.id);
   if(!data.length){sonuc.innerHTML='<div style="color:#2a1e42;font-size:13px">Kullanıcı bulunamadı</div>';return;}
-  sonuc.innerHTML=data.map(d=>`<div class="arkadas-item"><div class="arkadas-avatar">${d.data().username[0].toUpperCase()}</div><div class="arkadas-ad">${safe(d.data().username)}</div><button class="arkadas-btn-mor" onclick="istekGonder('${d.id}','${safe(d.data().username)}',this)">+ İstek At</button></div>`).join("");
+  const [ds1,ds2,dp1]=await Promise.all([
+    db.collection("friendRequests").where("fromId","==",aktifHesap.id).where("status","==","kabul").get(),
+    db.collection("friendRequests").where("toId","==",aktifHesap.id).where("status","==","kabul").get(),
+    db.collection("friendRequests").where("fromId","==",aktifHesap.id).where("status","==","bekliyor").get(),
+  ]);
+  const dArk=new Set([...ds1.docs.map(d=>d.data().toId),...ds2.docs.map(d=>d.data().fromId)]);
+  const dBek=new Set(dp1.docs.map(d=>d.data().toId));
+  sonuc.innerHTML=data.map(d=>{
+    const uid=d.id,un=safe(d.data().username);
+    let btn;
+    if(dArk.has(uid)) btn=`<button class="arkadas-btn-yesil" onclick="dmAc('${uid}','${un}')">💬 Mesaj</button>`;
+    else if(dBek.has(uid)) btn=`<button class="arkadas-btn-kirmizi" disabled>⏳ Bekliyor</button>`;
+    else btn=`<button class="arkadas-btn-mor" onclick="istekGonder('${uid}','${un}',this)">+ İstek At</button>`;
+    return `<div class="arkadas-item"><div class="arkadas-avatar">${d.data().username[0].toUpperCase()}</div><div class="arkadas-ad">${un}</div>${btn}</div>`;
+  }).join("");
 }
 
 function dmChatId(a,b){return [a,b].sort().join("_");}
