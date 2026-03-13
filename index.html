@@ -476,6 +476,10 @@
     </div>
     <div class="err" id="authErr"></div>
     <button class="btn" id="authSubmitBtn" onclick="authSubmit()" style="margin-top:0">Giriş Yap</button>
+    <div id="misafirBtnWrap">
+      <div style="display:flex;align-items:center;gap:8px;margin:10px 0"><div style="flex:1;height:1px;background:#1e1a32"></div><span style="font-size:11px;color:#2a1e42">veya</span><div style="flex:1;height:1px;background:#1e1a32"></div></div>
+      <button class="btn" onclick="misafirAc()" style="background:#0c0c14;border:1.5px solid #1e1a32;color:#4a3a6a;margin-top:0">👤 Misafir Girişi</button>
+    </div>
 
     
     
@@ -653,6 +657,11 @@
     <div class="card" style="margin-top:40px">
       <div style="font-size:20px;font-weight:700;color:#e8e0f0;margin-bottom:12px" id="isimBaslik"></div>
       <span class="label">Takma ismin</span><input id="isimGir" type="text" placeholder="Takma ismin" />
+      <div id="misafirSoruWrap" style="background:#0c0c14;border:1px solid #1e1a32;border-radius:10px;padding:12px;margin:8px 0;display:none">
+        <div style="font-size:12px;color:#a78bfa;font-weight:700;margin-bottom:8px;text-align:center">🤖 Ben robot değilim</div>
+        <div style="font-size:14px;font-weight:700;color:#e2d9f3;margin-bottom:10px;line-height:1.5" id="misafirSoruMetin"></div>
+        <div id="misafirSiklari" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
       <button class="btn" onclick="isimleGir()">Odaya Gir</button>
       <button class="btn btn-gray" onclick="anaSayfayaDon()" style="margin-top:6px">Geri</button>
       <div class="err" id="isimErr"></div>
@@ -761,7 +770,7 @@
   </div>
 </div>
 
-<div class="ver">v13.7</div>
+<div class="ver">v14.0</div>
 
 <!-- DOĞRULAMA KODU -->
 <div class="overlay" id="dogrulamaOverlay" style="display:none">
@@ -795,6 +804,24 @@
     </div>
     <button class="btn" onclick="yaziBoyutuKaydet()">💾 Kaydet</button>
     <button class="btn btn-gray" onclick="yaziBoyutuKapat()" style="margin-top:6px">Kapat</button>
+  </div>
+</div>
+
+<!-- MİSAFİR GİRİŞ -->
+<div class="overlay" id="misafirOverlay" style="display:none">
+  <div class="kvkk-box" style="max-width:360px">
+    <div style="font-size:32px;text-align:center;margin-bottom:8px">👤</div>
+    <div class="kvkk-title" style="text-align:center">Misafir Girişi</div>
+    <div style="font-size:12px;color:#4a3a6a;margin-bottom:16px;text-align:center">Sadece oda görüntüleyebilir ve mesajlaşabilirsin</div>
+    <input id="misafirIsim" type="text" placeholder="Kullanıcı adı (en az 3 karakter)" maxlength="20" autocomplete="off" style="margin-bottom:12px" />
+    <div style="background:#0c0c14;border:1px solid #1e1a32;border-radius:10px;padding:12px;margin-bottom:12px;text-align:center">
+      <div style="font-size:13px;color:#a78bfa;font-weight:700;margin-bottom:8px">🤖 Ben robot değilim</div>
+      <div style="font-size:20px;font-weight:700;color:#e2d9f3;margin-bottom:10px" id="misafirSoru"></div>
+      <input id="misafirCevap" type="number" placeholder="Cevabını gir" style="text-align:center;font-size:18px;margin-bottom:0" />
+    </div>
+    <div class="err" id="misafirErr"></div>
+    <button class="btn" onclick="misafirGiris()" style="margin-bottom:8px">Misafir Giriş</button>
+    <button class="btn btn-gray" onclick="misafirKapat()">İptal</button>
   </div>
 </div>
 
@@ -886,11 +913,13 @@ function authTab(tab){
     el("authSifre2").style.display="none";
     el("authIsim").style.display="none";
     el("authSubmitBtn").textContent="Giriş Yap";
+    if(el("misafirBtnWrap"))el("misafirBtnWrap").style.display="block";
   } else {
     el("tabKayit").style.background="";el("tabKayit").style.color="";el("tabKayit").style.border="";
     el("tabGiris").style.background="#1e1a32";el("tabGiris").style.color="#a78bfa";el("tabGiris").style.border="1.5px solid #3b1f6e";
     el("authSifre2").style.display="block";
     el("authIsim").style.display="block";
+    if(el("misafirBtnWrap"))el("misafirBtnWrap").style.display="none";
     el("authSubmitBtn").textContent="Kayıt Ol";
   }
   hataGizle("authErr");
@@ -981,6 +1010,131 @@ async function emailGiris(){
   }
   catch(e){hata("authErr","Hata: "+e.message);}
 }
+
+const turkcesorular = [
+  {s:"Ocakta ...... vardı, yandı.",siklar:["Yemeğim","Telefonum","Buzdolabım"],c:0},
+  {s:"Sabah ...... içtim, güne başladım.",siklar:["Çay","Benzin","Şampuan"],c:0},
+  {s:"Marketten ...... aldım, eve geldim.",siklar:["Kasiyeri","Ekmek","Rafları"],c:0},
+  {s:"Ayağıma ...... giydim, dışarı çıktım.",siklar:["Eldiven","Şapka","Ayakkabı"],c:0},
+  {s:"Hava soğuktu, ...... giydim.",siklar:["Mayo","Mont","Şort"],c:0},
+  {s:"Kalemimi ...... düşürdüm.",siklar:["Yere","Göğe","Buluta"],c:0},
+  {s:"Kedim ...... üstünde uyudu.",siklar:["Bulutun","Koltukun","Uçağın"],c:0},
+  {s:"Dişlerimi ...... fırçaladım.",siklar:["Süpürgeyle","Fırçayla","Çatalla"],c:0},
+  {s:"Annem bana ...... pişirdi.",siklar:["Taş","Makarna","Odun"],c:0},
+  {s:"Yağmur yağınca ...... açtım.",siklar:["Televizyonu","Şemsiyeyi","Buzdolabını"],c:0},
+  {s:"Okula ...... ile gittim.",siklar:["Otobüs","Buzdolabı","Çamaşır makinesi"],c:0},
+  {s:"Babam bahçede ...... dikti.",siklar:["Araba","Çiçek","Televizyon"],c:0},
+  {s:"Kitabı ...... koydum.",siklar:["Rafa","Suya","Sobaya"],c:0},
+  {s:"Akşam ...... yedik.",siklar:["Çorba","Tarak","Sabun"],c:0},
+  {s:"Kardeşim ...... oynuyor.",siklar:["Topla","Çekiçle","Ütüyle"],c:0},
+  {s:"Sınıfta ...... yazdık.",siklar:["Ödev","Araba","Yemek"],c:0},
+  {s:"Çantama ...... koydum.",siklar:["Defterimi","Buzdolabımı","Kapıyı"],c:0},
+  {s:"Denizde ...... yaptık.",siklar:["Yüzme","Ütü","Ders"],c:0},
+  {s:"Köpeğime ...... verdim.",siklar:["Mama","Benzin","Boya"],c:0},
+  {s:"Mutfakta ...... pişirdim.",siklar:["Yumurta","Ayakkabı","Halı"],c:0},
+  {s:"Parkta ...... sallandım.",siklar:["Salıncakta","Dolapta","Çatıda"],c:0},
+  {s:"Bardağa ...... doldurdum.",siklar:["Kum","Su","Taş"],c:0},
+  {s:"Kapıyı ...... ile açtım.",siklar:["Kaşıkla","Anahtarla","Yastıkla"],c:0},
+  {s:"Hastayım, ...... gittim.",siklar:["Parka","Doktora","Sinemaya"],c:0},
+  {s:"Saçımı ...... ile taradım.",siklar:["Çatalla","Tarakla","Kalemle"],c:0},
+  {s:"Duvarı ...... ile boyadık.",siklar:["Fırçayla","Kaşıkla","Havluyla"],c:0},
+  {s:"Sobaya ...... attık.",siklar:["Buz","Odun","Dondurma"],c:0},
+  {s:"Tabağa ...... koydum.",siklar:["Pilav","Sabun","Anahtar"],c:0},
+  {s:"Pencereden ...... gördüm.",siklar:["Kuşları","Balıkları","Yıldızları"],c:0},
+  {s:"Gece ...... yattım.",siklar:["Yatağa","Masaya","Balkona"],c:0},
+  {s:"Öğretmen tahtaya ...... yazdı.",siklar:["Soruyu","Çorbayı","Halıyı"],c:0},
+  {s:"Cebime ...... koydum.",siklar:["Buzdolabı","Para","Sandalye"],c:0},
+  {s:"Mektubu ...... attım.",siklar:["Sobaya","Posta kutusuna","Denize"],c:0},
+  {s:"Ellerimi ...... ile yıkadım.",siklar:["Sabunla","Kumla","Boyayla"],c:0},
+  {s:"Bisikletime ...... bindim.",siklar:["Mutfakta","Parkta","Banyoda"],c:0},
+  {s:"Pazardan ...... aldım.",siklar:["Domates","Bilgisayar","Bulaşık makinesi"],c:0},
+  {s:"Çiçekleri ...... ile suladım.",siklar:["Çaydanlıkla","Kovayla","Tabakla"],c:0},
+  {s:"Resim defterine ...... çizdim.",siklar:["Ev","Müzik","Rüzgâr"],c:0},
+  {s:"Soğuk su içince ...... oldum.",siklar:["Hasta","Mutlu","Zengin"],c:0},
+  {s:"Doğum günümde ...... kestik.",siklar:["Odun","Pasta","İp"],c:0},
+  {s:"Lavaboda ...... yıkadım.",siklar:["Bulaşık","Araba","Halı"],c:0},
+  {s:"Telefonu ...... bastım.",siklar:["Kulağıma","Ayağıma","Sırtıma"],c:0},
+  {s:"Çaydanlığa ...... koydum.",siklar:["Pirinç","Su","Boya"],c:0},
+  {s:"Bebeğim ...... içinde uyudu.",siklar:["Beşikte","Çantada","Dolapta"],c:0},
+  {s:"Ağaçtan ...... düştü.",siklar:["Elma","Sandalye","Televizyon"],c:0},
+  {s:"Masaya ...... koydum.",siklar:["Tabakları","Yatağı","Kapıyı"],c:0},
+  {s:"Gözüme ...... kaçtı.",siklar:["Araba","Toz","Masa"],c:0},
+  {s:"Otobüste ...... oturdum.",siklar:["Koltuğa","Yere","Bagaja"],c:0},
+  {s:"Kış gelince ...... yağdı.",siklar:["Kar","Kum","Yaprak"],c:0},
+  {s:"Kazağımı ...... çıkardım.",siklar:["Dolaptan","Fırından","Buzdolabından"],c:0},
+  {s:"Anneme ...... aldım.",siklar:["Çiçek","Lastik","Tuğla"],c:0},
+  {s:"Kuş ...... uçtu.",siklar:["Gökyüzüne","Denize","Toprağa"],c:0},
+  {s:"Sofrayı ...... ile sildim.",siklar:["Bezle","Kalemle","Çatalla"],c:0},
+  {s:"Çocuklar ...... koşuyor.",siklar:["Bahçede","Dolapta","Fırında"],c:0},
+  {s:"Terli olunca ...... aldım.",siklar:["Duş","Ders","İzin"],c:0},
+  {s:"Arabanın ...... patladı.",siklar:["Lastiği","Koltuğu","Aynası"],c:0},
+  {s:"Buzdolabından ...... aldım.",siklar:["Süt","Ayakkabı","Defter"],c:0},
+  {s:"Derste ...... dinledik.",siklar:["Öğretmeni","Televizyonu","Kuşları"],c:0},
+  {s:"Arkadaşıma ...... yazdım.",siklar:["Mektup","Araba","Sandalye"],c:0},
+  {s:"Polis ...... kullanır.",siklar:["Düdük","Tencere","Ütü"],c:0},
+  {s:"Balığı ...... tuttuk.",siklar:["Oltayla","Süpürgeyle","Kalemle"],c:0},
+  {s:"Lambayı ...... yaktım.",siklar:["Düğmeye basarak","Suyla","Üfleyerek"],c:0},
+  {s:"Camı ...... kırdım.",siklar:["Topla","Yastıkla","Süngerle"],c:0},
+  {s:"Tarlada ...... ektik.",siklar:["Tohum","Telefon","Bardak"],c:0},
+  {s:"Yolda ...... gördüm.",siklar:["Kedi","Buzdolabı","Çamaşır makinesi"],c:0},
+  {s:"Doktor bana ...... verdi.",siklar:["İlaç","Oyuncak","Anahtar"],c:0},
+  {s:"Dolabıma ...... astım.",siklar:["Gömleğimi","Televizyonu","Masayı"],c:0},
+  {s:"Uyumadan önce ...... okudum.",siklar:["Kitap","Bulaşık","Halı"],c:0},
+  {s:"Havuza ...... atladım.",siklar:["Mayoyla","Montla","Paltomla"],c:0},
+  {s:"Kedim ...... içiyor.",siklar:["Süt","Benzin","Boya"],c:0},
+  {s:"Ütüyle ...... düzelttim.",siklar:["Gömleği","Ekmeği","Tabağı"],c:0},
+  {s:"Çocuk ...... ile oynuyor.",siklar:["Oyuncakla","Bıçakla","Sobayla"],c:0},
+  {s:"Yemeğe ...... koyduk.",siklar:["Tuz","Kum","Boya"],c:0},
+  {s:"Ayakkabımın ...... çözüldü.",siklar:["Bağcığı","Kapağı","Düğmesi"],c:0},
+  {s:"Tatilde ...... gittik.",siklar:["Denize","Okula","İşe"],c:0},
+  {s:"Aç olunca ...... yedim.",siklar:["Sandviç","Kalem","Silgi"],c:0},
+  {s:"Bayramda ...... ziyaret ettik.",siklar:["Büyükannemi","Marketi","Benzinliği"],c:0},
+  {s:"Toprak ...... sonra ıslandı.",siklar:["Yağmurdan","Güneşten","Rüzgârdan"],c:0},
+  {s:"Makas ile ...... kestim.",siklar:["Kâğıdı","Taşı","Demiri"],c:0},
+  {s:"Saat çalınca ...... kalktım.",siklar:["Yataktan","Ağaçtan","Denizden"],c:0},
+];
+let _misafirCevap=null,_misafirCevapIsim=null,_misafirSecilen=null;
+function misafirSikSec(btn,sec){
+  _misafirSecilen=sec;
+  document.querySelectorAll("#misafirSiklari button").forEach(b=>{b.style.background="#1e1a32";b.style.borderColor="#2a1e42";b.style.color="#c4b5fd";});
+  btn.style.background="#3b1f6e";btn.style.borderColor="#a78bfa";btn.style.color="#fff";
+}
+function misafirAc(){
+  const a=Math.floor(Math.random()*10)+1;
+  const b=Math.floor(Math.random()*10)+1;
+  const ops=[
+    {soru:a+" + "+b+" = ?", cevap:a+b},
+    {soru:a+" × "+b+" = ?", cevap:a*b},
+    {soru:(a+b)+" - "+a+" = ?", cevap:b},
+  ];
+  const sec=ops[Math.floor(Math.random()*ops.length)];
+  _misafirCevap=sec.cevap;
+  el("misafirSoru").textContent=sec.soru;
+  el("misafirIsim").value="";
+  el("misafirCevap").value="";
+  el("misafirErr").style.display="none";
+  el("misafirOverlay").style.display="flex";
+  el("altNav").style.display="none";
+  gizle("authOverlay");
+}
+function misafirKapat(){
+  el("misafirOverlay").style.display="none";
+  el("altNav").style.display="flex";
+}
+async function misafirGiris(){
+  const isim=el("misafirIsim").value.trim();
+  const cevap=parseInt(el("misafirCevap").value);
+  if(!isim||isim.length<3){el("misafirErr").textContent="Kullanıcı adı en az 3 karakter!";el("misafirErr").style.display="block";return;}
+  if(isNaN(cevap)||cevap!==_misafirCevap){el("misafirErr").textContent="❌ Yanlış cevap! Tekrar dene.";el("misafirErr").style.display="block";return;}
+  const snap=await db.collection("users").where("username","==",isim).get();
+  if(!snap.empty){el("misafirErr").textContent="Bu kullanıcı adı alınmış! ❌";el("misafirErr").style.display="block";return;}
+  aktifHesap={id:"misafir_"+Date.now(),username:isim,email:"",kisaId:"#MİSAFİR",misafir:true,created_at:new Date().toISOString()};
+  localStorage.setItem("mukoChatHesap",JSON.stringify(aktifHesap));
+  misafirKapat();
+  authGuncelle();
+  alert("Hoş geldin, "+isim+"! 👤 Misafir olarak girdin.");
+}
+
 let _kayitKod=null, _kayitEmail=null, _kayitSifre=null, _kayitIsim=null, _kayitAsamasi=false;
 
 async function emailKayit(){
@@ -1130,7 +1284,28 @@ function odayaTikla(oda){
     hataGizle("sifreErr");gizle("anaSayfa");goster("sifreSayfasi");
   } else {
     if(aktifHesap){aktifIsim=aktifHesap.username+"#"+Math.floor(100+Math.random()*900);gizle("anaSayfa");sohbeteGir();}
-    else{el("isimBaslik").textContent=oda.name;el("isimGir").value="";hataGizle("isimErr");gizle("anaSayfa");goster("isimSayfasi");}
+    else{
+      el("isimBaslik").textContent=oda.name;
+      el("isimGir").value="";
+      hataGizle("isimErr");
+      if(!aktifHesap){
+        // Misafir - matematik sorusu göster
+        const q=turkcesorular[Math.floor(Math.random()*turkcesorular.length)];
+        // Shuffle options
+        const idx=[0,1,2].sort(()=>Math.random()-0.5);
+        const dogru=q.siklar[q.c];
+        const karisik=idx.map(i=>q.siklar[i]);
+        _misafirCevapIsim=dogru;
+        el("misafirSoruMetin").textContent=q.s;
+        el("misafirSiklari").innerHTML=karisik.map(s=>
+          `<button onclick="misafirSikSec(this,'${s.replace(/'/g,"\'")}')" style="background:#1e1a32;border:1px solid #2a1e42;color:#c4b5fd;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;text-align:left;font-family:inherit;transition:all 0.2s">${s}</button>`
+        ).join("");
+        el("misafirSoruWrap").style.display="block";
+      } else {
+        el("misafirSoruWrap").style.display="none";
+      }
+      gizle("anaSayfa");goster("isimSayfasi");
+    }
   }
 }
 async function sifreDogrula(){
@@ -1143,6 +1318,10 @@ async function sifreDogrula(){
 async function isimleGir(){
   const i=el("isimGir").value.trim();
   if(!i){hata("isimErr","Takma isim gir!");return;}
+  if(!aktifHesap){
+    if(!_misafirSecilen){hata("isimErr","❌ Bir şık seçmelisin!");return;}
+    if(_misafirSecilen!==_misafirCevapIsim){hata("isimErr","❌ Yanlış cevap! Tekrar dene.");return;}
+  }
   const lh=await limitKontrol();if(lh){hata("isimErr",lh);return;}
   aktifIsim=i+"#"+Math.floor(100+Math.random()*900);gizle("isimSayfasi");await sohbeteGir();
 }
