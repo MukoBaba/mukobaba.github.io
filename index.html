@@ -718,7 +718,7 @@
   </div>
 </div>
 
-<div class="ver">v8.8</div>
+<div class="ver">v8.9</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ALT NAV -->
@@ -1002,7 +1002,7 @@ async function sohbeteGir(){
       }
     ).subscribe();
   // Polling sadece online/kick/durum için (daha seyrek)
-  timer=setInterval(async()=>{await onlineGuncelle();await odaDurumGuncelle();await kickKontrolEt();},5000);
+  timer=setInterval(async()=>{await mesajlariYukle();await onlineGuncelle();await odaDurumGuncelle();await kickKontrolEt();},3000);
   presTimer=setInterval(presenceYenile,10000);
   el("mesajIn").focus();
 }
@@ -1870,18 +1870,12 @@ function dmAc(toId, toAd){
   el("dmOverlay").style.display="flex";
   arkadasKapat();
   dmMesajlariYukle();
-  if(dmInterval) clearInterval(dmInterval);
-  // DM realtime
-  const dmChannel = sb.channel("dm:"+aktifHesap.id)
-    .on("postgres_changes",{event:"INSERT",schema:"public",table:"direct_messages",
-      filter:"to_id=eq."+aktifHesap.id},
-      async()=>{ await dmMesajlariYukle(); }
-    ).subscribe();
-  dmInterval = dmChannel; // cleanup için sakla
+  if(dmInterval){ clearInterval(dmInterval); dmInterval=null; }
+  dmInterval = setInterval(dmMesajlariYukle, 3000);
 }
 function dmKapat(){
   el("dmOverlay").style.display="none";
-  if(dmInterval){ try{sb.removeChannel(dmInterval);}catch(e){} dmInterval=null; }
+  if(dmInterval){ clearInterval(dmInterval); dmInterval=null; }
   aktifDmKisi=null;
 }
 
