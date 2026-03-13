@@ -415,6 +415,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
+<div id="baglantiBar" class="baglanti-bar"></div>
 
 <!-- KVKK -->
 <div class="overlay" id="kvkkOverlay">
@@ -657,7 +658,6 @@
 
 <!-- SOHBET -->
 <div id="chatSayfasi">
-  <div id="baglantiBar" class="baglanti-bar"></div>
   <div class="duyuru-banner" id="duyuruBanner" onclick="duyuruBannerKapat()"></div>
   <div class="chat-header">
     <div class="chat-oda-adi"><span class="oda-hash">#</span><span id="chatBaslik">Oda</span></div>
@@ -757,7 +757,7 @@
   </div>
 </div>
 
-<div class="ver">v13.1</div>
+<div class="ver">v13.5</div>
 
 <!-- DOĞRULAMA KODU -->
 <div class="overlay" id="dogrulamaOverlay" style="display:none">
@@ -1441,25 +1441,25 @@ function baglantiGoster(msg, online){
 }
 window.addEventListener("load", function(){
   setTimeout(()=>{
-    baglantiGoster("🔴 Bağlanıyor, lütfen bekle...", false);
+    baglantiGoster("🔴 Sunucuya bağlanılıyor...", false);
     // Try firestore ping
-    db.collection("rooms").limit(1).get()
-      .then(()=>baglantiGoster("🟢 Bağlandı! Hazırım.", true))
-      .catch(()=>baglantiGoster("🔴 Bağlantı kurulamadı!", false));
+    db.collection("rooms").limit(1).get({source:'server'})
+      .then(()=>baglantiGoster("🟢 Sunucu bağlantısı kuruldu!", true))
+      .catch(()=>baglantiGoster("🔴 Sunucuya bağlanılamadı!", false));
   },800);
 });
 
 const baglantiKesikMesajlar = [
-  "😢 Seni kaybettim, geri dönmeyi bekliyorum...",
-  "💔 Bağlantım koptu, yalnız hissediyorum...",
-  "😰 Bir şeyler ters gitti, düzeltmeye çalışıyorum...",
-  "🥺 Seninle konuşamıyorum şu an, birazdan döneceğim...",
+  "😢 Sunucu bağlantısı kesildi...",
+  "💔 Sunucu ile bağlantı koptu...",
+  "😰 Sunucuya ulaşılamıyor, yeniden bağlanılıyor...",
+  "🥺 Sunucu yanıt vermiyor, lütfen bekle...",
 ];
 const baglantiGeriMesajlar = [
-  "🥰 Geri döndüm, seni çok özledim!",
-  "✨ Bağlantı kuruldu, yeniden birlikteyiz!",
-  "💫 İşte geldim! Her şey yolunda.",
-  "🎉 Bağlandım! Devam edebiliriz.",
+  "🥰 Sunucuya yeniden bağlandı!",
+  "✨ Sunucu bağlantısı yeniden kuruldu!",
+  "💫 Sunucu bağlantısı aktif!",
+  "🎉 Sunucuya bağlandı, devam edebilirsiniz!",
 ];
 function baglantiDurumu(ok){
   const bar=el("baglantiBar");
