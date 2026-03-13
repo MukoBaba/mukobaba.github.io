@@ -426,7 +426,11 @@
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       Google ile Giriş Yap
     </button>
-    <button class="btn btn-gray" onclick="authKapat()" style="margin-top:4px">İptal</button>
+    <button class="btn" onclick="githubGiris()" style="background:#24292e;color:#fff;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub ile Giriş Yap
+    </button>
+    <button class="btn btn-gray" onclick="authKapat()" style="margin-top:8px">İptal</button>
   </div>
 </div>
 
@@ -702,7 +706,7 @@
   </div>
 </div>
 
-<div class="ver">v7.8</div>
+<div class="ver">v8.0</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ALT NAV -->
@@ -1588,9 +1592,6 @@ function authTab(t){
   }
 }
 
-let bekleyenEmail = null;
-let bekleyenKayit = null;
-
 async function kullaniciAdiKaydet(){
   const ad = el("kullaniciAdiInput").value.trim();
   const err = el("kullaniciAdiErr");
@@ -1609,68 +1610,20 @@ async function kullaniciAdiKaydet(){
   alert("Hoş geldin, "+ad+"! ✅");
 }
 
+async function githubGiris(){
+  const {error} = await sb.auth.signInWithOAuth({
+    provider: "github",
+    options: { redirectTo: "https://mukobaba.github.io" }
+  });
+  if(error) alert("GitHub hata: "+error.message);
+}
+
 async function googleGiris(){
   const {error} = await sb.auth.signInWithOAuth({
     provider: "google",
     options: { redirectTo: "https://mukobaba.github.io" }
   });
   if(error) alert("Google hata: "+error.message);
-}
-
-async function girisYap(){
-  const ad = el("girisAd").value.trim();
-  const sifre = el("girisSifre").value;
-  const err = el("girisErr");
-  err.style.color = "#f87171";
-  if(!ad || !sifre){ err.textContent = "Tüm alanları doldur!"; return; }
-  err.style.color = "#a78bfa";
-  err.textContent = "Giriş yapılıyor...";
-  const {data:kullanici} = await sb.from("users").select("id,username,email,created_at").eq("username", ad).single();
-  if(!kullanici){ err.style.color="#f87171"; err.textContent = "Kullanıcı bulunamadı!"; return; }
-  const {data:session, error:loginErr} = await sb.auth.signInWithPassword({email: kullanici.email, password: sifre});
-  if(loginErr){
-    err.style.color="#f87171";
-    if(loginErr.message.includes("Email not confirmed")){
-      err.textContent = "❌ E-postanı doğrulamamışsın! Gelen kutunu kontrol et.";
-    } else {
-      err.textContent = "Şifre hatalı!";
-    }
-    return;
-  }
-  aktifHesap = {id: kullanici.id, username: kullanici.username, email: kullanici.email, created_at: kullanici.created_at};
-  localStorage.setItem("mukoChatHesap", JSON.stringify(aktifHesap));
-  err.textContent = "";
-  authGuncelle();
-  authKapat();
-}
-
-async function kayitOl(){
-  const ad = el("kayitAd").value.trim();
-  const email = el("kayitEmail").value.trim().toLowerCase();
-  const s1 = el("kayitSifre").value;
-  const s2 = el("kayitSifre2").value;
-  const err = el("kayitErr");
-  err.style.color = "#f87171";
-  if(!ad || !email || !s1 || !s2){ err.textContent = "Tüm alanları doldur!"; return; }
-  if(ad.length < 3){ err.textContent = "Kullanıcı adı en az 3 karakter olmalı!"; return; }
-  if(!email.includes("@") || !email.includes(".")){ err.textContent = "Geçerli bir e-posta gir!"; return; }
-  if(s1.length < 6){ err.textContent = "Şifre en az 6 karakter olmalı!"; return; }
-  if(s1 !== s2){ err.textContent = "Şifreler eşleşmiyor!"; return; }
-  err.style.color = "#a78bfa";
-  err.textContent = "Kullanıcı adı kontrol ediliyor...";
-  const {data:varMi} = await sb.from("users").select("id").eq("username", ad);
-  if(varMi && varMi.length > 0){ err.style.color="#f87171"; err.textContent = "Bu kullanıcı adı alınmış! ❌"; return; }
-  const {data:emailVarMi} = await sb.from("users").select("id").eq("email", email);
-  if(emailVarMi && emailVarMi.length > 0){ err.style.color="#f87171"; err.textContent = "Bu e-posta zaten kayıtlı! ❌"; return; }
-  err.textContent = "Hesap oluşturuluyor...";
-  const {data:auth, error:authErr} = await sb.auth.signUp({email:email, password:s1});
-  if(authErr){ err.style.color="#f87171"; err.textContent = "Hata: " + authErr.message; return; }
-  if(!auth || !auth.user){ err.style.color="#f87171"; err.textContent = "Kayıt başarısız, tekrar dene!"; return; }
-  bekleyenEmail = email;
-  bekleyenKayit = {id: auth.user.id, username: ad, email: email};
-  err.style.color="#34d399";
-  err.textContent = "✅ Kod e-postana gönderildi!";
-  authTab("otp");
 }
 
 async function hesapCikis(){
@@ -1696,44 +1649,6 @@ function yeniOdaKontrol(){
   yeniOdaGoster();
 }
 
-
-async function otpDogrula(){
-  const kod = el("otpKod").value.trim().replace(/\s/g,"");
-  if(kod.length !== 6 || !/^\d+$/.test(kod)){ el("otpErr").textContent="6 haneli sayısal kodu gir!"; return; }
-  el("otpErr").textContent="Doğrulanıyor...";
-  const {data:verifyData, error} = await sb.auth.verifyOtp({email: bekleyenEmail, token: kod, type: "signup"});
-  if(error){ el("otpErr").textContent="❌ Hatalı veya süresi dolmuş kod!"; return; }
-  // Doğrulama başarılı - şimdi users tablosuna ekle
-  el("otpErr").style.color="#a78bfa";
-  el("otpErr").textContent="Profil oluşturuluyor...";
-  const {data:yeniKullanici, error:dbErr} = await sb.from("users").insert([{id: bekleyenKayit.id, username: bekleyenKayit.username, email: bekleyenKayit.email}]).select().single();
-  if(dbErr || !yeniKullanici){ el("otpErr").style.color="#f87171"; el("otpErr").textContent="DB hatası: "+(dbErr?.message||"bilinmeyen"); return; }
-  aktifHesap = {id: yeniKullanici.id, username: yeniKullanici.username, email: yeniKullanici.email, created_at: yeniKullanici.created_at};
-  localStorage.setItem("mukoChatHesap", JSON.stringify(aktifHesap));
-  bekleyenEmail=null; bekleyenKayit=null;
-  authGuncelle(); authKapat();
-  alert("Hoş geldin, "+aktifHesap.username+"! ✅");
-}
-
-async function otpTekrarGonder(){
-  if(!bekleyenEmail) return;
-  const {error} = await sb.auth.resend({email: bekleyenEmail, type: "signup"});
-  if(error){ el("otpErr").textContent="Hata: "+error.message; return; }
-  el("otpErr").style.color="#34d399";
-  el("otpErr").textContent="✅ Kod tekrar gönderildi!";
-}
-
-async function sifreUnuttum(){
-  const email = el("sifreUnuttumEmail").value.trim();
-  if(!email){ el("sifreUnuttumErr").textContent="E-posta gir!"; return; }
-  el("sifreUnuttumErr").textContent="Gönderiliyor...";
-  const {error} = await sb.auth.resetPasswordForEmail(email, {
-    redirectTo: "https://mukobaba.github.io/MukoCanChat/"
-  });
-  if(error){ el("sifreUnuttumErr").textContent="Hata: "+error.message; return; }
-  el("sifreUnuttumErr").style.color="#34d399";
-  el("sifreUnuttumErr").textContent="✅ Mail gönderildi! Gelen kutunu kontrol et.";
-}
 
 // ===== PROFİL =====
 async function profilAc(){
