@@ -393,6 +393,7 @@
     button { touch-action: manipulation; cursor: pointer; }
   </style>
 
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
@@ -449,6 +450,9 @@
     <input id="authSifre" autocomplete="current-password" type="password" placeholder="Şifre (en az 6 karakter)" style="margin-bottom:8px" />
     <input id="authSifre2" type="password" placeholder="Şifreyi tekrar gir" style="margin-bottom:8px;display:none" />
     <input id="authIsim" type="text" placeholder="Kullanıcı adı (en az 3 karakter)" maxlength="20" autocomplete="off" style="margin-bottom:8px;display:none" />
+    <div id="recaptchaWrap" style="display:none;margin-bottom:8px">
+      <div class="g-recaptcha" data-sitekey="6LdLaYksAAAAAM7Em1DpjEXL4k8o-IX8Ill2HPrg" data-callback="recaptchaOk" data-expired-callback="recaptchaTemizle"></div>
+    </div>
     <div class="err" id="authErr"></div>
     <button class="btn" id="authSubmitBtn" onclick="authSubmit()" style="margin-top:0">Giriş Yap</button>
 
@@ -734,22 +738,21 @@
   </div>
 </div>
 
-<div class="ver">v10.9</div>
+<div class="ver">v11.2</div>
 
-<!-- DOĞRULAMA BEKLENİYOR -->
+<!-- DOĞRULAMA KODU -->
 <div class="overlay" id="dogrulamaOverlay" style="display:none">
   <div class="kvkk-box" style="text-align:center;max-width:380px">
-    <div style="font-size:48px;margin-bottom:12px">📧</div>
-    <div class="kvkk-title">E-postanı Doğrula</div>
-    <div id="dogrulamaMesaj" style="font-size:13px;color:#4a3a6a;margin-bottom:16px;line-height:1.6">
-      E-posta adresine doğrulama linki gönderildi.<br>Lütfen e-postanı kontrol et ve linke tıkla.
+    <div style="font-size:48px;margin-bottom:12px">🔐</div>
+    <div class="kvkk-title">Hesabını Doğrula</div>
+    <div style="font-size:13px;color:#4a3a6a;margin-bottom:16px;line-height:1.6">
+      Aşağıdaki 6 haneli kodu gir ve hesabını doğrula.
     </div>
-    <div id="dogrulamaDurum" style="font-size:13px;padding:10px;border-radius:10px;margin-bottom:12px;background:#0c0c14;border:1px solid #1e1a32;color:#6d4aa0">
-      ⏳ Doğrulama bekleniyor...
-    </div>
-    <button class="btn" onclick="dogrulamaKontrol()" style="margin-bottom:8px">🔄 Doğruladım, kontrol et</button>
-    <button class="btn" onclick="tekrarGonderOverlay()" style="background:#1e1a32;border:1.5px solid #3b1f6e;color:#a78bfa;margin-bottom:8px">📨 Tekrar gönder</button>
-    <button class="btn btn-gray" onclick="dogrulamaCikis()">Çıkış Yap</button>
+    <div id="dogrulamaKodGoster" style="font-size:36px;font-weight:700;color:#a78bfa;letter-spacing:8px;padding:16px;background:#0c0c14;border-radius:12px;border:1px solid #3b1f6e;margin-bottom:16px">------</div>
+    <input id="dogrulamaKodInput" type="number" placeholder="Kodu gir" maxlength="6" style="text-align:center;font-size:24px;letter-spacing:6px;margin-bottom:8px" />
+    <div class="err" id="dogrulamaErr"></div>
+    <button class="btn" onclick="dogrulamaKodKontrol()" style="margin-bottom:8px">✅ Doğrula</button>
+    <button class="btn btn-gray" onclick="dogrulamaCikis()">İptal</button>
   </div>
 </div>
 
@@ -829,6 +832,9 @@ function authAc(){goster("authOverlay");el("altNav").style.display="none";hataGi
 function authKapat(){gizle("authOverlay");el("altNav").style.display="flex";}
 
 let aktifAuthTab = "giris";
+let _recaptchaToken = null;
+function recaptchaOk(token){_recaptchaToken=token;}
+function recaptchaTemizle(){_recaptchaToken=null;}
 function authTab(tab){
   aktifAuthTab=tab;
   if(tab==="giris"){
@@ -851,49 +857,31 @@ async function authSubmit(){
   else await emailKayit();
 }
 
-function dogrulamaAc(email){
+let _dogrulamaKod=null;
+function dogrulamaAc(){
+  _dogrulamaKod=Math.floor(100000+Math.random()*900000).toString();
+  el("dogrulamaKodGoster").textContent=_dogrulamaKod;
+  el("dogrulamaKodInput").value="";
   el("dogrulamaOverlay").style.display="flex";
   el("altNav").style.display="none";
-  el("dogrulamaMesaj").innerHTML=email
-    ? email+" adresine doğrulama linki gönderildi.<br>E-postanı kontrol et ve linke tıkla."
-    : "E-posta adresine doğrulama linki gönderildi.<br>Lütfen e-postanı kontrol et ve linke tıkla.";
-  el("dogrulamaDurum").textContent="⏳ Doğrulama bekleniyor...";
-  el("dogrulamaDurum").style.color="#6d4aa0";
-  el("dogrulamaDurum").style.borderColor="#1e1a32";
+  if(el("dogrulamaErr"))el("dogrulamaErr").style.display="none";
 }
-async function dogrulamaKontrol(){
-  const user=auth.currentUser;
-  if(!user){el("dogrulamaOverlay").style.display="none";return;}
-  el("dogrulamaDurum").textContent="🔄 Kontrol ediliyor...";
-  await user.reload();
-  if(user.emailVerified){
-    el("dogrulamaDurum").textContent="✅ E-posta doğrulandı! Yönlendiriliyorsunuz...";
-    el("dogrulamaDurum").style.color="#34d399";
-    el("dogrulamaDurum").style.borderColor="#0f2e1c";
-    setTimeout(()=>{
-      el("dogrulamaOverlay").style.display="none";
-      el("altNav").style.display="flex";
-      authGuncelle();
-    },1500);
+function dogrulamaKodKontrol(){
+  const girilen=el("dogrulamaKodInput").value.trim();
+  if(girilen===_dogrulamaKod){
+    el("dogrulamaOverlay").style.display="none";
+    el("altNav").style.display="flex";
+    authGuncelle();
+    alert("Hesabın doğrulandı! Hoş geldin ✅");
   } else {
-    el("dogrulamaDurum").textContent="❌ Henüz doğrulanmadı. E-postanı kontrol et.";
-    el("dogrulamaDurum").style.color="#f87171";
-    el("dogrulamaDurum").style.borderColor="#3a1010";
-  }
-}
-async function tekrarGonderOverlay(){
-  const user=auth.currentUser;
-  if(!user)return;
-  try{
-    await user.sendEmailVerification();
-    el("dogrulamaDurum").textContent="📨 Doğrulama e-postası tekrar gönderildi!";
-    el("dogrulamaDurum").style.color="#a78bfa";
-  }catch(e){
-    el("dogrulamaDurum").textContent="Hata: "+e.message;
+    el("dogrulamaErr").textContent="❌ Yanlış kod! Tekrar dene.";
+    el("dogrulamaErr").style.display="block";
   }
 }
 async function dogrulamaCikis(){
-  await auth.signOut();
+  const user=auth.currentUser;
+  if(user)await user.delete().catch(()=>{});
+  await auth.signOut().catch(()=>{});
   el("dogrulamaOverlay").style.display="none";
   el("altNav").style.display="flex";
   aktifHesap=null;authGuncelle();
@@ -914,11 +902,6 @@ async function emailGiris(){
   hata("authErr","Giriş yapılıyor...");
   try{
     const cred=await auth.signInWithEmailAndPassword(email,sifre);
-    if(!cred.user.emailVerified){
-      authKapat();
-      dogrulamaAc(cred.user.email);
-      return;
-    }
     authKapat();
   }
   catch(e){hata("authErr","Hata: "+e.message);}
@@ -929,6 +912,7 @@ async function emailKayit(){
   const sifre2=el("authSifre2").value;
   const isim=el("authIsim").value.trim();
   if(!email||!sifre||!sifre2||!isim){hata("authErr","Tüm alanları doldur!");return;}
+  if(!_recaptchaToken){hata("authErr","Lütfen robot olmadığını doğrula!");return;}
   if(sifre.length<6){hata("authErr","Şifre en az 6 karakter!");return;}
   if(sifre!==sifre2){hata("authErr","Şifreler eşleşmiyor! ❌");return;}
   if(isim.length<3){hata("authErr","Kullanıcı adı en az 3 karakter!");return;}
@@ -941,12 +925,8 @@ async function emailKayit(){
     await db.collection("users").doc(cred.user.uid).set({
       username:isim,email:email,createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    aktifHesap={id:cred.user.uid,username:isim,email:email,created_at:new Date().toISOString()};
-    localStorage.setItem("mukoChatHesap",JSON.stringify(aktifHesap));
-    gizle("kullaniciAdiOverlay");authKapat();authGuncelle();
-    await cred.user.sendEmailVerification();
     authKapat();
-    dogrulamaAc(email);
+    dogrulamaAc();
   }
   catch(e){hata("authErr","Hata: "+e.message);}
 }
