@@ -339,7 +339,7 @@
     .auth-header-btn.girisli { color: #a78bfa; border-color: #3b1f6e; background: #12101e; }
 
     /* ===== PROFİL ===== */
-    .profil-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .profil-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
     .profil-box { background: #12101e; border: 1px solid #1e1a32; border-radius: 20px; padding: 24px; width: 100%; max-width: 380px; }
     .profil-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #6d28d9, #7c3aed); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: #fff; margin: 0 auto 12px; }
     .profil-ad { text-align: center; font-size: 18px; font-weight: 700; color: #e8e0f0; margin-bottom: 4px; }
@@ -714,7 +714,7 @@
   </div>
 </div>
 
-<div class="ver">v8.4</div>
+<div class="ver">v8.5</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ALT NAV -->
@@ -859,7 +859,7 @@ function bildirimGonder(isim,mesaj){
 
 // ODA LİSTESİ
 async function odalariYukle(){
-  const{data}=await sb.from("rooms").select("id,name,password,max_users,duyuru_modu,konu,created_at").order("created_at",{ascending:false});
+  const{data}=await sb.from("rooms").select("id,name,password,max_users,duyuru_modu,konu,created_at,user_id,kategori,owner_key").order("created_at",{ascending:false});
   tumOdalar=data||[];odalariGoster(tumOdalar);
 }
 function odalariGoster(odalar){
