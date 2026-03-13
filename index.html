@@ -718,7 +718,7 @@
   </div>
 </div>
 
-<div class="ver">v8.6</div>
+<div class="ver">v8.8</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ALT NAV -->
@@ -984,6 +984,7 @@ async function sohbeteGir(){
   await presenceGir();
   // Oda sahibiyse otomatik admin yap
   if(aktifHesap && aktifOda.user_id === aktifHesap.id){
+    if(!aktifIsim) aktifIsim = aktifHesap.username;
     yoneticiMi=true;
     el("yoneticiPanel").style.display="none";
     el("yGiris").style.display="none";
@@ -1173,9 +1174,10 @@ async function gonder(){
   const veri={room:aktifOda.id,name:aktifIsim,message:text};
   if(alintiMsg)veri.reply_to=alintiMsg.isim+": "+alintiMsg.metin.substring(0,60);
   alintiTemizle();
-  const{error}=await sb.from("messages").insert([veri]);
+  const{data:yeniMesaj, error}=await sb.from("messages").insert([veri]).select().single();
   el("gonderBtn").disabled=false;
   if(error){el("mesajIn").value=text;hata("chatErr","Gönderilemedi!");}
+  else if(yeniMesaj){ mesajEkle(yeniMesaj); }
   const ta = el("mesajIn"); ta.style.height="auto"; ta.focus();
 }
 
