@@ -87,6 +87,8 @@
     .durum-dot { width: 7px; height: 7px; border-radius: 50%; background: #fbbf24; margin-left: auto; flex-shrink: 0; }
     .durum-dot.ok { background: #34d399; box-shadow: 0 0 5px #34d399; }
     .duyuru-bar { background: rgba(124,58,237,0.08); border-bottom: 1px solid #2a1a48; padding: 7px 16px; text-align: center; font-size: 12px; color: #fbbf24; flex-shrink: 0; display: none; }
+    .duyuru-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 8888; background: linear-gradient(135deg,#6d28d9,#7c3aed); color: #fff; font-size: 13px; font-weight: 600; padding: 12px 16px; text-align: center; display: none; animation: slideDown 0.4s cubic-bezier(0.2,0.8,0.4,1); box-shadow: 0 4px 20px rgba(109,40,217,0.5); cursor: pointer; max-width: 460px; margin: 0 auto; border-radius: 0 0 14px 14px; }
+    @keyframes slideDown { from { transform: translateY(-100%); opacity:0; } to { transform: translateY(0); opacity:1; } }
 
     /* ---- MESAJLAR ---- */
     .mesajlar {
@@ -348,7 +350,7 @@
     .profil-oda-item { background: #0c0c14; border: 1px solid #1a1628; border-radius: 10px; padding: 10px 14px; margin-bottom: 6px; font-size: 13px; color: #c0b0e0; display: flex; align-items: center; justify-content: space-between; }
 
     /* ===== ARKADAŞ ===== */
-    .arkadas-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+    .arkadas-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
     .arkadas-box { background: #12101e; border: 1px solid #1e1a32; border-radius: 20px; padding: 20px; width: 100%; max-width: 380px; max-height: 85vh; overflow-y: auto; }
     .arkadas-tabs { display: flex; gap: 0; margin-bottom: 16px; border-radius: 10px; overflow: hidden; border: 1px solid #1e1a32; }
     .arkadas-tab { flex: 1; padding: 9px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 600; color: #3d2d5a; background: #0c0c14; transition: all 0.2s; }
@@ -457,18 +459,15 @@
 </div>
 
 <!-- PROFİL OVERLAY -->
-<div class="profil-overlay" id="profilOverlay">
+<div class="profil-overlay" id="profilOverlay" onclick="if(event.target===this)profilKapat()">
   <div class="profil-box">
+    <div style="display:flex;justify-content:flex-end"><span onclick="profilKapat()" style="cursor:pointer;color:#3d2d5a;font-size:20px">✕</span></div>
     <div class="profil-avatar" id="profilAvatar">?</div>
     <div class="profil-ad" id="profilAdText"></div>
     <div class="profil-tarih" id="profilTarih"></div>
     <div class="profil-odalar-baslik">Kurduğun Odalar</div>
     <div id="profilOdalar"><div style="color:#2a1e42;font-size:13px">Henüz oda yok</div></div>
-    <div id="profilOwnerKey" style="display:none;margin-top:12px">
-      <div style="font-size:11px;color:#4a3a6a;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⚙️ Yönetici Anahtarları</div>
-      <div id="profilKeyListe"></div>
-    </div>
-    <button class="btn btn-mor" onclick="arkadasAc()" style="margin-top:10px;background:#1e1a32;border:1.5px solid #3b1f6e;color:#a78bfa">👥 Arkadaşlar</button>
+<button class="btn btn-mor" onclick="arkadasAc()" style="margin-top:10px;background:#1e1a32;border:1.5px solid #3b1f6e;color:#a78bfa">👥 Arkadaşlar</button>
     <button class="btn btn-gray" onclick="profilKapat()" style="margin-top:8px">Kapat</button>
   </div>
 </div>
@@ -620,6 +619,7 @@
 
 <!-- SOHBET -->
 <div id="chatSayfasi">
+  <div class="duyuru-banner" id="duyuruBanner" onclick="duyuruBannerKapat()"></div>
   <div class="chat-header">
     <div class="chat-oda-adi"><span class="oda-hash">#</span><span id="chatBaslik">Oda</span></div>
     <div class="header-sag">
@@ -718,7 +718,7 @@
   </div>
 </div>
 
-<div class="ver">v8.9</div>
+<div class="ver">v9.3</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ALT NAV -->
@@ -1002,9 +1002,9 @@ async function sohbeteGir(){
       }
     ).subscribe();
   // Polling sadece online/kick/durum için (daha seyrek)
-  timer=setInterval(async()=>{await mesajlariYukle();await onlineGuncelle();await odaDurumGuncelle();await kickKontrolEt();},3000);
+  timer=setInterval(async()=>{await onlineGuncelle();await odaDurumGuncelle();await kickKontrolEt();},4000);
   presTimer=setInterval(presenceYenile,10000);
-  el("mesajIn").focus();
+  // el("mesajIn").focus(); // klavye açılmasın
 }
 
 // PRESENCE
@@ -1032,7 +1032,8 @@ async function onlineGuncelle(){
 function mesajEkle(m){
   const box = el("mesajlar");
   if(!box) return;
-  if(box.querySelector(`.msg[data-id="${m.id}"]`)) return; // zaten var
+  if(box.querySelector(`.msg[data-id="${m.id}"]`)) return;
+  if(m.name === "📢 Duyuru"){ duyuruBannerGoster(m.message); return; } // zaten var
   const benimMi = m.name===aktifIsim;
   const scrollBottom = box.scrollHeight-box.scrollTop-box.clientHeight<80;
   const gruplar = box.querySelectorAll(".msg-grup");
@@ -1289,10 +1290,28 @@ document.addEventListener("keydown",e=>{
 });
 
 // ===== TALEP SİSTEMİ =====
+let duyuruBannerTimer = null;
+function duyuruBannerGoster(metin){
+  const b = el("duyuruBanner");
+  b.textContent = "📢 " + metin;
+  b.style.display = "block";
+  if(duyuruBannerTimer) clearTimeout(duyuruBannerTimer);
+  duyuruBannerTimer = setTimeout(()=>{ b.style.display="none"; }, 6000);
+}
+function duyuruBannerKapat(){ el("duyuruBanner").style.display="none"; }
+
 async function herkeseDuyuru(){
+  const sonDuyuruKey = "duyuru_"+aktifOda.id;
+  const sonDuyuru = localStorage.getItem(sonDuyuruKey);
+  if(sonDuyuru && Date.now()-parseInt(sonDuyuru) < 600000){
+    const kalanSn = Math.ceil((600000-(Date.now()-parseInt(sonDuyuru)))/60000);
+    alert("Duyuru göndermek için "+kalanSn+" dakika daha beklemelisin!"); return;
+  }
   const mesaj = prompt("Duyurunuzu yazın:");
   if(!mesaj||!mesaj.trim()) return;
   await sb.from("messages").insert([{room:aktifOda.id, name:"📢 Duyuru", message:aktifIsim+": "+mesaj.trim()}]);
+  localStorage.setItem(sonDuyuruKey, Date.now().toString());
+  duyuruBannerGoster(aktifIsim+": "+mesaj.trim());
 }
 
 async function talepGonder(){
@@ -1693,19 +1712,7 @@ async function profilAc(){
       btn.addEventListener("click", ()=>profilOdaSil(btn.dataset.id, btn.dataset.ad));
     });
   }
-  // Yönetici anahtarları
-  if(odalar && odalar.length>0){
-    el("profilOwnerKey").style.display="";
-    el("profilKeyListe").innerHTML = odalar.map(o=>`
-      <div style="background:#0c0c14;border:1px solid #1a1628;border-radius:10px;padding:8px 12px;margin-bottom:6px;font-size:12px">
-        <div style="color:#e8e0f0;font-weight:600">#${safe(o.name)}</div>
-        <div style="color:#4a3a6a;margin-top:4px;display:flex;align-items:center;gap:6px">
-          <span>🔑 Anahtar: </span>
-          <span id="key_${o.id}" style="color:#a78bfa;font-family:monospace;filter:blur(4px);cursor:pointer" onclick="this.style.filter='none'">${safe(o.owner_key||"—")}</span>
-          <span style="font-size:10px;color:#2a1e42">(görmek için tıkla)</span>
-        </div>
-      </div>`).join("");
-  }
+
   el("profilOverlay").style.display="flex";
 }
 function profilKapat(){ el("profilOverlay").style.display="none"; }
@@ -1871,7 +1878,7 @@ function dmAc(toId, toAd){
   arkadasKapat();
   dmMesajlariYukle();
   if(dmInterval){ clearInterval(dmInterval); dmInterval=null; }
-  dmInterval = setInterval(dmMesajlariYukle, 3000);
+  dmInterval = setInterval(dmMesajlariYukle, 5000);
 }
 function dmKapat(){
   el("dmOverlay").style.display="none";
