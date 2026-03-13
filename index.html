@@ -45,7 +45,7 @@
     .ara-input::placeholder { color: #2a1e42; }
 
     /* ---- KVKK ---- */
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
     .kvkk-box { background: #12101e; border: 1px solid #1e1a32; border-radius: 20px; padding: 24px; max-width: 420px; width: 100%; }
     .kvkk-title { font-size: 16px; font-weight: 700; color: #a78bfa; margin-bottom: 12px; }
     .kvkk-text { font-size: 13px; color: #4a3a6a; line-height: 1.65; max-height: 190px; overflow-y: auto; background: #0c0c14; border-radius: 12px; padding: 14px; margin-bottom: 16px; border: 1px solid #1e1a32; }
@@ -367,7 +367,7 @@
     .dm-gonder { width: 40px; height: 40px; border-radius: 50%; border: none; background: linear-gradient(135deg,#6d28d9,#7c3aed); color: #fff; font-size: 16px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 
     /* ===== ALT NAV ===== */
-    .alt-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #12101e; border-top: 1px solid #1e1a32; display: flex; z-index: 50; max-width: 460px; margin: 0 auto; }
+    .alt-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #12101e; border-top: 1px solid #1e1a32; display: flex; z-index: 10; max-width: 460px; margin: 0 auto; }
     .alt-nav-btn { flex: 1; padding: 12px 0 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; color: #3d2d5a; font-size: 11px; font-weight: 600; transition: all 0.2s; border: none; background: none; font-family: inherit; }
     .alt-nav-btn.aktif { color: #a78bfa; }
     .alt-nav-btn .nav-icon { font-size: 22px; }
@@ -706,7 +706,7 @@
   </div>
 </div>
 
-<div class="ver">v8.0</div>
+<div class="ver">v8.3</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- ALT NAV -->
@@ -803,6 +803,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
       // Yeni Google kullanıcısı - kullanıcı adı overlay
       authKapat();
       goster("kullaniciAdiOverlay");
+      el("altNav").style.display="none";
     }
   }
   if(event === "SIGNED_OUT"){
@@ -982,8 +983,10 @@ async function sohbeteGir(){
   // Realtime: yeni mesaj gelince anında güncelle
   if(realtimeChannel){ sb.removeChannel(realtimeChannel); }
   realtimeChannel = sb.channel("messages:"+aktifOda.id)
-    .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages",filter:"room=eq."+aktifOda.id},
-      (payload)=>{ mesajEkle(payload.new); }
+    .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},
+      (payload)=>{ 
+        if(payload.new.room === aktifOda.id) mesajEkle(payload.new);
+      }
     ).subscribe();
   // Polling sadece online/kick/durum için (daha seyrek)
   timer=setInterval(async()=>{await onlineGuncelle();await odaDurumGuncelle();await kickKontrolEt();},5000);
@@ -1161,7 +1164,6 @@ async function gonder(){
   const{error}=await sb.from("messages").insert([veri]);
   el("gonderBtn").disabled=false;
   if(error){el("mesajIn").value=text;hata("chatErr","Gönderilemedi!");}
-  else await mesajlariYukle();
   const ta = el("mesajIn"); ta.style.height="auto"; ta.focus();
 }
 
@@ -1606,6 +1608,7 @@ async function kullaniciAdiKaydet(){
   aktifHesap = {id:yeni.id, username:ad, email:session.user.email, created_at:yeni.created_at};
   localStorage.setItem("mukoChatHesap", JSON.stringify(aktifHesap));
   gizle("kullaniciAdiOverlay");
+  el("altNav").style.display="flex";
   authGuncelle();
   alert("Hoş geldin, "+ad+"! ✅");
 }
